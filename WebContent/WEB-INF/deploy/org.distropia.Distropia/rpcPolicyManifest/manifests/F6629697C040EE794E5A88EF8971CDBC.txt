@@ -1,0 +1,2 @@
+serviceClass: org.distropia.client.DistropiaService
+path: 7FE05976EC1ABBA7DC2A9FC6FB3A0361.gwt.rpc

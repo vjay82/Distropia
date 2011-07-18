@@ -1,0 +1,5 @@
+<module>
+	<inherits name="com.smartgwt.SmartGwt"/>
+	<inherits name='com.google.gwt.user.User'/>
+	<entry-point class="org.distropia.client.Distropia"/>
+</module>

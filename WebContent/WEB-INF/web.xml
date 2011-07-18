@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <servlet>
+    <javaee:description></javaee:description>
+    <javaee:display-name>Backend</javaee:display-name>
+    <servlet-name>Backend</servlet-name>
+    <servlet-class>org.distropia.server.Backend</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <listener>
+		<listener-class>org.distropia.server.Backend</listener-class>
+	</listener>
+  <servlet-mapping>
+    <servlet-name>Backend</servlet-name>
+    <url-pattern>/Backend</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Backend</servlet-name>
+    <url-pattern>/Distropia/Backend</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>DistropiaService</servlet-name>
+    <servlet-class>org.distropia.server.DistropiaServiceImpl</servlet-class>
+    <load-on-startup>0</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DistropiaService</servlet-name>
+    <url-pattern>/org.distropia.Distropia/DistropiaService</url-pattern>
+  </servlet-mapping>
+  <welcome-file-list>
+    <welcome-file>Distropia.html</welcome-file>
+  </welcome-file-list>
+</web-app>
