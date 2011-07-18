@@ -72,7 +72,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	public static final boolean DEBUG_PRINT_DEBUGPAGE_ON_GET = true;
 	public static final boolean DEBUG_DISABLE_PRIVATE_IP_CHECK = false;
 	public static final boolean DEBUG_SHORT_PROXYCOMMANDS = false;
-	public static final boolean DEBUG_SHOW_KNOWNHOST_SENDCOMMAND_STACKTRACES = true;
+	public static final boolean DEBUG_SHOW_KNOWNHOST_SENDCOMMAND_STACKTRACES = false;
 	
 	
 	// static
@@ -346,7 +346,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 				
 				
 			}
-			else System.out.println("got something but no uid");
+			else logger.error("Got a request, but uid is missing!");
 		} catch (Exception e) {
 			logger.error("Error handling request from " + hostNameForLogging, e);
 		}

@@ -382,7 +382,6 @@ public class ConnectionStatus {
 				{
 					// only check for new internetIP every minute
 					if ((internetAddress == null) && (nextCheckMyInternetIp < System.currentTimeMillis())){
-						System.out.println("checking possible internet ips");
 						addAddressesThatCouldBeOurs( Backend.getAutoconf().getPossibleExternalNetworkAddresses());
 						testAddressesThatCouldBeMine(); 
 						nextCheckMyInternetIp = System.currentTimeMillis() + 60000;
@@ -394,9 +393,9 @@ public class ConnectionStatus {
 					
 					if (internetAddress == null){
 						if ( upnpAllowed && (Backend.getAutoconf().isUPNPAvailable()) && (Backend.getDHT().getPort(true) > 0) ){ // only try upnp when DHT already selected a port
-							System.out.println("trying upnp");
+							logger.info("trying upnp");
 							if (Backend.getAutoconf().mapPortsWithUPNP()){
-								System.out.println("success");
+								logger.info("upnp was successful");
 								// not needed anymore
 								/*, testing now: "+KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort()));
 								if (!testAddressIfIsMe(KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort()))){
@@ -406,7 +405,7 @@ public class ConnectionStatus {
 								}
 								else System.out.println("success2");*/ 
 							}
-							else System.out.println("failed");
+							else logger.info("upnp failed");
 						}
 					}
 					
@@ -437,7 +436,6 @@ public class ConnectionStatus {
 	
 	@SuppressWarnings("unchecked")
 	private void testAddressesThatCouldBeMine() {
-		System.out.println("testing my internet addresses");
 		
 		ArrayList<String> addresses;
 		synchronized (addressesToCheckIfOurs) {

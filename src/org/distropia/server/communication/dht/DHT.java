@@ -358,7 +358,8 @@ public class DHT {
 		logger.info("Bootstrapping DHT");
 		for(InetSocketAddress inetSocketAddress: inetSocketAddresses){
 			try 
-			{ System.out.println("trying to bootstrap from: " + inetSocketAddress);
+			{ 
+				logger.info("trying to bootstrap from: " + inetSocketAddress);
 				FutureBootstrap future = peer.bootstrap( inetSocketAddress);
 				future.await(5000);
 				if (future.isSuccess()) logger.info("Bootstrapping DHT from " + inetSocketAddress.getAddress() + " succeeded, contacts now: " + getContacts());
