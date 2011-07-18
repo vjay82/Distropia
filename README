@@ -3,7 +3,7 @@ Distropia - a P2P Network.
 
 Introduction
 
-Distropia is a "Social Network" Client, which is not based on a central server, but stores it's data decentralized in the network. The idea is, that every family or organization runs a Distropia node, where they create their accounts on. Every users data is divided into private and public parts. The public part will be freely shared in the network. The private part contains the information, who could read which public data. But let me explain:
+Distropia is a "Social Network" Client, which is not based on a central server, but stores its data decentralized in the network. The idea is, that every family or organization runs a Distropia node, where they create their accounts on. Every users data is divided into private and public parts. The public part will be freely shared in the network. The private part contains the information, who could read which public data. But let me explain:
 
 
 Technical
@@ -17,7 +17,7 @@ On top of that runs an own protocol, which has the task to allow nodes to commun
 
 3. Users
 Users could create an account at every node ( but you should prefer your own one ). Every user has two databases, the private one for private keys/public keys of other users and data you don't want to share and the public database, which will be freely delivered to other users/nodes. The private database is encrypted with the users password.
-If the user browses another user, or makes friends with him, the other user's public database is fetched to the local Distropia node. 
+If the user browses another user, or makes friends with him, the other users public database is fetched to the local Distropia node. 
 It is kept in sync by two mechanisms 1. from time to time and at logon the Node searches for new database entries for that user on the nodes, which it found in the Kademlia DHT. 2. When ever a user modifies his public database (as he knows, which are his friends and if they are online and at which node, the protocol allows the node to instantly push the changes to that other node.
 Whenever an user is creating a new object in his public database (like a chat message, status, a "like", or picture) he has to select, who should be able to see the data. Distropia looks if for that group of users (or user) is an AES key already existing. If not, it creates a new one and encrypts it with every public key of every user, who should be able to see the data. This goes into a special keystore- table in the public database. After that the object is encrypted with that AES key. This ensures, that every object is only decrypt-able by the users, who are allowed to see it. (If you want you could "like" opposite statements of people, without let them seeing it. If you have a multi personality for example ;) But the danger they talk to each other still remains :( )
 
@@ -37,7 +37,7 @@ Java was chosen as language, because it is spread widely. It runs from smart pho
 The first (desktop) client is written as a tomcat servlet. It is meant to run as a service at the computer and to be used within a browser. The client library used here is GWT (specifically smartGWT). Why have I done that? The idea is to let the service run whenever your computer runs. This way it could get the data, the users want, and push out their data also, even when they aren't logged in. In an organization, or family it could share the data of friends, users have in common. The UI is implemented as a website, so you can use it with external browsers to. This is also meant to close the gap until a smartphone client for your phone is created. SmartGWT has also the benefit, that one could create relatively easy skins for it.
 
 6. What is done so far.
-The network layer is nearly finished. I have just begun creating the user databases. I'm sorry that the project is poorly documented and the client part is only in german so far. I'm releasing this far ahead of planned date and thought I would had some more weeks to test and built up the prototype until it's initial running state. 
+The network layer is nearly finished. I have just begun creating the user databases. I'm sorry that the project is poorly documented and the client part is only in german so far. I'm releasing this far ahead of planned date and thought I would had some more weeks to test and built up the prototype until its initial running state. 
 
 
 7. How to get started
