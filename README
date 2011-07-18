@@ -33,10 +33,10 @@ As the project is open source it is expected to have spinoffs. For that a branch
 
 5. Architecture
 Java was chosen as language, because it is distributed a lot. It runs from smart phones to fridges. 
-The first (desktop) client is written as a tomcat servlet. It is meant to run as a service at the computer and used within a browser. The client library used here is GWT (specifically smartGWT). Why have I done that? The idea is to let the service run whenever your compute runs. This way it could get the data the users want and push out their data, even when they aren't logged in. In an organization, or family it could even share the data of friends, users have in common. The UI is implemented as website, so you can use it with external browsers to. This is also meant to close the gap until a smartphone client for your smartphone is created. 
+The first (desktop) client is written as a tomcat servlet. It is meant to run as a service at the computer and used within a browser. The client library used here is GWT (specifically smartGWT). Why have I done that? The idea is to let the service run whenever your compute runs. This way it could get the data the users want and push out their data, even when they aren't logged in. In an organization, or family it could even share the data of friends, users have in common. The UI is implemented as website, so you can use it with external browsers to. This is also meant to close the gap until a smartphone client for your smartphone is created. SmartGWT has also the benefit, that one could create relatively easy skins for.
 
 6. What is done so far.
-The network layer is nearly finished. I have just begun creating the user databases. 
+The network layer is nearly finished. I have just begun creating the user databases. I'm sorry that the project is poorly documented and the client part is only in german so far. I'm releasing this far ahead of planned release date and thought I had some more weeks to test and built up the prototype until it's initial running state. 
 
 
 7. How to get started
