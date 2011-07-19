@@ -73,7 +73,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	public static final boolean DEBUG_PRINT_DEBUGPAGE_ON_GET = true;
 	public static final boolean DEBUG_DISABLE_PRIVATE_IP_CHECK = false;
 	public static final boolean DEBUG_SHORT_PROXYCOMMANDS = false;
-	public static final boolean DEBUG_SHOW_KNOWNHOST_SENDCOMMAND_STACKTRACES = false;
+	public static final boolean DEBUG_SHOW_KNOWNHOST_SENDCOMMAND_STACKTRACES = true;
 	
 	
 	// static
@@ -281,7 +281,8 @@ public class Backend extends HttpServlet implements ServletContextListener{
 			ArrayList<KnownHost> knownHosts = getMyKnownHosts();
 			synchronized (knownHosts) {
 				for(KnownHost knownHost : knownHosts)
-					body.append(" uid: " + knownHost.getUniqueHostId() + " Addresses: " + Arrays.toString( knownHost.getAddresses().toArray())+"<br>");
+					body.append(" uid: " + knownHost.getUniqueHostId()  +" encryption enabled: " + knownHost.isSecureConnection() + " Addresses: " + Arrays.toString( knownHost.getAddresses().toArray())+"<br>");
+					
 			}
 			body.append("</body></html>");
 			ServletOutputStream servletOutputStream = response.getOutputStream();

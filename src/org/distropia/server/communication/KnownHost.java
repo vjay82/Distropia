@@ -1,5 +1,6 @@
 package org.distropia.server.communication;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.Key;
@@ -25,6 +26,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.util.ByteArrayBuffer;
+import org.apache.http.util.EntityUtils;
 import org.distropia.client.Utils;
 import org.distropia.server.Backend;
 import org.distropia.server.database.EncryptableObject;
@@ -395,13 +398,42 @@ public class KnownHost{
 		}
 		return null;
 	}
+	
+	private static byte[] httpRequestToByteArray(final HttpServletRequest httpRequest) throws IOException 
+	{
+		if (httpRequest == null) {
+			throw new IllegalArgumentException("HTTP request may not be null");
+		}
+		InputStream instream = httpRequest.getInputStream();
+		if (instream == null) {
+		    return null;
+		}
+		if (httpRequest.getContentLength() > Integer.MAX_VALUE) {
+		     throw new IllegalArgumentException("HTTP request too large to be buffered in memory");
+		}
+		int i = (int)httpRequest.getContentLength();
+		if (i < 0) {
+		    i = 4096;
+		}
+		ByteArrayBuffer buffer = new ByteArrayBuffer(i);
+		try {
+		    byte[] tmp = new byte[4096];
+		    int l;
+		    while((l = instream.read(tmp)) != -1) {
+		    	buffer.append(tmp, 0, l);
+		    }
+		} finally {
+		    instream.close();
+		}
+		return buffer.toByteArray();
+	}
 
 	public boolean processEvent( HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Exception{		
 		String strEncrypted = httpRequest.getHeader("encrypted");		
 		if (strEncrypted == null) throw new Exception("Command - Field encrypted is null.");
 		boolean encrypted = "1".equals( strEncrypted);
 		
-		long contentLength = httpRequest.getContentLength();
+		/*long contentLength = httpRequest.getContentLength();
 		byte[] data = new byte[ (int) Math.min( contentLength, MAXIMUM_MESSAGE_SIZE)];
 		InputStream inputStream = httpRequest.getInputStream();
 		try
@@ -411,7 +443,8 @@ public class KnownHost{
 		}
 		finally{
 			inputStream.close();
-		}
+		}*/
+		byte[] data = httpRequestToByteArray(httpRequest);
 		
 		DefaultServerResponse response = processEvent( encrypted, data);
 		
@@ -778,19 +811,9 @@ public class KnownHost{
 			
 			if( response.getStatusLine().getStatusCode() == HttpServletResponse.SC_OK)
 			{
-				boolean responseEncrypted = "1".equals( response.getLastHeader("encrypted").getValue());
-				HttpEntity entity = response.getEntity();
-				long contentLength = entity.getContentLength();
-				byte[] responseData = new byte[ (int) Math.min( contentLength, MAXIMUM_MESSAGE_SIZE)];
-				InputStream inputStream = entity.getContent();
-				try
-				{
-					inputStream.read( responseData); // throw new Exception("content length did not match, message too big?");
-				}
-				finally{
-					inputStream.close();
-				}
-				DefaultServerResponse defaultServerResponse = (DefaultServerResponse) EncryptableObject.createFrom(responseEncrypted, responseData, getKeyPair().getPrivate());
+				data = EntityUtils.toByteArray( response.getEntity());
+				if (data.length == 0) throw new Exception("got null - response");
+				DefaultServerResponse defaultServerResponse = (DefaultServerResponse) EncryptableObject.createFrom("1".equals( response.getLastHeader("encrypted").getValue()), data, getKeyPair().getPrivate());
 				if ((defaultServerResponse != null) && (defaultServerResponse.getYourAddress() != null))
 					Backend.getConnectionStatus().addAddressThatCouldBeOurs( defaultServerResponse.getYourAddress());
 				return defaultServerResponse;
