@@ -25,6 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.distropia.client.Utils;
 import org.distropia.server.Backend;
 import org.distropia.server.database.EncryptableObject;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
@@ -57,6 +58,7 @@ public class KnownHost{
 	protected transient KnownHosts knownHosts = null; // $codepro.audit.disable transientFieldInNonSerializable
 	protected transient long nextDHTLookup = 0; // $codepro.audit.disable transientFieldInNonSerializable
 	protected transient long lastAskedForBeingMyProxy = 0; // $codepro.audit.disable transientFieldInNonSerializable
+	
 	
 	// other properties
 	
@@ -241,44 +243,43 @@ public class KnownHost{
 		if (!isSecureConnection())
 		{
 			setSecuringConnection( true);
-			try{
 							
-				try {
-					// start secureConnection by sending 2 requests
-					// when we have a direct connection it doesn't matter
-					// when we have indirect connections both requests go over different relays, so a relay alone never gets the key
-					KeyGenerator kgen = KeyGenerator.getInstance("AES");
-				    kgen.init( 256);
-				    SecretKey aesKey = kgen.generateKey();
-				    Cipher cipher = Cipher.getInstance("AES");
-				    cipher.init( Cipher.WRAP_MODE, aesKey);
-					
-				    // first request
-				    AesKeyExchangeResponse aesKeyExchangeResponse = (AesKeyExchangeResponse) sendCommand( new AesKeyExchangeRequest( aesKey), true, true);
-					Key responseAesKey = aesKeyExchangeResponse.getAesKey();
-				    
-					// second request
-					PublicKeyExchangeResponse publicKeyExchangeResponse = (PublicKeyExchangeResponse) sendCommand( new PublicKeyExchangeRequest( cipher.wrap( getKeyPair().getPublic())), false, true);
-					byte[] responseWrappedPublicKey = publicKeyExchangeResponse.getWrappedPublicKey();
-					
-					cipher = Cipher.getInstance("AES");
-				    cipher.init( Cipher.UNWRAP_MODE, responseAesKey);
-					foreignPublicKey = (PublicKey) cipher.unwrap( responseWrappedPublicKey, "RSA", Cipher.PUBLIC_KEY);
-					
-					if (foreignPublicKey != null) 
-					{
-						notifyKnownHostsOfChange( true); // immediate save to database
-						return true;
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					logger.error("Error starting secure connection", e);				
+			try {
+				// start secureConnection by sending 2 requests
+				// when we have a direct connection it doesn't matter
+				// when we have indirect connections both requests go over different relays, so a relay alone never gets the key
+				KeyGenerator kgen = KeyGenerator.getInstance("AES");
+			    kgen.init( 256);
+			    SecretKey aesKey = kgen.generateKey();
+			    Cipher cipher = Cipher.getInstance("AES");
+			    cipher.init( Cipher.WRAP_MODE, aesKey);
+				
+			    // first request
+			    AesKeyExchangeResponse aesKeyExchangeResponse = (AesKeyExchangeResponse) sendCommand( new AesKeyExchangeRequest( aesKey), true, true);
+				Key responseAesKey = aesKeyExchangeResponse.getAesKey();
+			    
+				// second request
+				PublicKeyExchangeResponse publicKeyExchangeResponse = (PublicKeyExchangeResponse) sendCommand( new PublicKeyExchangeRequest( cipher.wrap( getKeyPair().getPublic())), false, true);
+				byte[] responseWrappedPublicKey = publicKeyExchangeResponse.getWrappedPublicKey();
+				
+				cipher = Cipher.getInstance("AES");
+			    cipher.init( Cipher.UNWRAP_MODE, responseAesKey);
+				foreignPublicKey = (PublicKey) cipher.unwrap( responseWrappedPublicKey, "RSA", Cipher.PUBLIC_KEY);
+				
+				if (foreignPublicKey != null) 
+				{
+					notifyKnownHostsOfChange( true); // immediate save to database
+					return true;
 				}
-				return false;
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("Error starting secure connection", e);				
 			}
 			finally{
 				setSecuringConnection( false);
 			}
+			return false;
+			
 		}
 		else return true;
 	}
@@ -398,14 +399,15 @@ public class KnownHost{
 	public boolean processEvent( HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Exception{		
 		String strEncrypted = httpRequest.getHeader("encrypted");		
 		if (strEncrypted == null) throw new Exception("Command - Field encrypted is null.");
-		boolean encrypted = Boolean.parseBoolean( strEncrypted);
+		boolean encrypted = "1".equals( strEncrypted);
 		
 		long contentLength = httpRequest.getContentLength();
 		byte[] data = new byte[ (int) Math.min( contentLength, MAXIMUM_MESSAGE_SIZE)];
 		InputStream inputStream = httpRequest.getInputStream();
 		try
 		{
-			if (inputStream.read( data) != data.length) throw new Exception("content length did not match, message too big?");
+			int readCount = inputStream.read( data);
+			//if (readCount != data.length) throw new Exception("content length did not match, got " + readCount + " bytes, expected " + data.length);
 		}
 		finally{
 			inputStream.close();
@@ -423,12 +425,12 @@ public class KnownHost{
 			data = null;
 			if (!isSecureConnection()) // no encryption possible
 			{
-				httpResponse.addHeader( "encrypted", "false");
+				httpResponse.addHeader( "encrypted", "0");
 				data = response.toByteArray();
 			}
 			else
 			{
-				httpResponse.addHeader( "encrypted", "true");
+				httpResponse.addHeader( "encrypted", "1");
 				data = response.encrypt(foreignPublicKey);
 			}
 			httpResponse.addHeader( HttpHeaders.Names.CONTENT_LENGTH, String.valueOf( data.length));
@@ -506,7 +508,7 @@ public class KnownHost{
 			kickHim = !stateCache.get("proxy_contractId").equals( proxyRequest.getContractId()); // somebody tries to steal the connection
 		}
 		if (kickHim){
-			logger.error("got invalid contractid, kicking client");
+			logger.error("got invalid contractid, kicking client (got " + proxyRequest.getContractId() + ", have " + stateCache.get("proxy_contractId") + ")");
 			Thread.sleep(1000);
 			return new ProxyResponse( false); // bye
 		}
@@ -766,7 +768,8 @@ public class KnownHost{
 				httpPost.getParams().setIntParameter("http.socket.timeout", 5000);
 			}
 			
-			httpPost.addHeader( "encrypted", String.valueOf( encrypted));
+			if (encrypted) httpPost.addHeader( "encrypted", "1");
+			else httpPost.addHeader( "encrypted", "0");
 			httpPost.setEntity( new ByteArrayEntity( data));
 			
 			logger.info("sending command " + request.getClass().getSimpleName() + " to " + address + Backend.getServletContextPath() + " encrypted: " + String.valueOf( encrypted));
@@ -775,14 +778,14 @@ public class KnownHost{
 			
 			if( response.getStatusLine().getStatusCode() == HttpServletResponse.SC_OK)
 			{
-				boolean responseEncrypted = Boolean.parseBoolean( response.getLastHeader("encrypted").getValue());
+				boolean responseEncrypted = "1".equals( response.getLastHeader("encrypted").getValue());
 				HttpEntity entity = response.getEntity();
 				long contentLength = entity.getContentLength();
 				byte[] responseData = new byte[ (int) Math.min( contentLength, MAXIMUM_MESSAGE_SIZE)];
 				InputStream inputStream = entity.getContent();
 				try
 				{
-					if (inputStream.read( responseData) != responseData.length) throw new Exception("content length did not match, message too big?");
+					inputStream.read( responseData); // throw new Exception("content length did not match, message too big?");
 				}
 				finally{
 					inputStream.close();
@@ -798,7 +801,7 @@ public class KnownHost{
 	
 	public PingResponse ping() throws Exception{
 		PingResponse pingResponse = (PingResponse) sendCommand( new PingRequest());
-		if (uniqueHostId == null){
+		if (Utils.isNullOrEmpty(uniqueHostId)){
 			setUniqueHostId( pingResponse.getPingResponseFromUniqueHostID());
 			if (!pingResponse.getPingResponseFromUniqueHostID().equals( Backend.getUniqueHostId())) notifyKnownHostsOfChange( true);
 		}

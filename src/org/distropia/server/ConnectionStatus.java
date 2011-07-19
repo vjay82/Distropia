@@ -323,15 +323,35 @@ public class ConnectionStatus {
 						
 						try {
 							
+							// as bootstrap addresses are entered without uniqueHostIDs in the configuration file could lead to strange things
 							if (Utils.isNullOrEmpty( hostToTest.getUniqueHostId())){
 								logger.info("checking against node " + hostToTest + " also getting UID");
 								hostToTest.ping(); // throws exception if not reachable
-								if ((hostToTest.getUniqueHostId() == null) || (Utils.equalsWithNull(hostToTest.getUniqueHostId(), Backend.getUniqueHostId()))){ // we pinged ourself, could happen with wrong config
-									logger.error("we got ourself, removing");
-									synchronized ( knownHosts) {
-										knownHosts.remove( hostToTest);
+								synchronized ( knownHosts) {
+									boolean duplicateHost = false;
+									for (KnownHost knownHost: knownHosts){
+										if (knownHost == hostToTest) continue;
+										if ((hostToTest.getUniqueHostId() != null) && (Utils.equalsWithNull(knownHost.getUniqueHostId(), hostToTest.getUniqueHostId()))){
+											logger.error("we got a dublicate host, removing");
+											knownHosts.remove( hostToTest);
+											duplicateHost = true;
+											newConnectedToInternet = true;
+										}
 									}
-									continue;
+									if (duplicateHost) continue;
+									
+									if ((hostToTest.getUniqueHostId() == null) || (Utils.equalsWithNull(hostToTest.getUniqueHostId(), Backend.getUniqueHostId()))){ // we pinged ourself, could happen with wrong config
+										logger.error("we got ourself, removing");
+										knownHosts.remove( hostToTest);
+										continue;
+									}
+									// check also against database now
+									knownHosts.remove( hostToTest);
+									if (knownHosts.getKnownHostOrNull( hostToTest.getUniqueHostId()) != null) //oops
+									{
+										knownHosts.getKnownHostOrNull( hostToTest.getUniqueHostId()).addAddress( hostToTest.getLastValidAddress());
+									}
+									else knownHosts.add( hostToTest);
 								}
 								newConnectedToInternet = true;
 								break;
@@ -409,10 +429,11 @@ public class ConnectionStatus {
 						}
 					}
 					
-					if (!onlyEstimatedOnline){
-						Backend.getDHT().manageDHT( false);
-					}
+				//	if (!onlyEstimatedOnline) Backend.getDHT().manageDHT();
 				}
+				
+				
+				Backend.getDHT().manageDHT( onlyEstimatedOnline);
 			
 				removeAddressesFromHosts(onlyEstimatedOnline);
 				manageProxyThreads();
@@ -595,6 +616,7 @@ public class ConnectionStatus {
 						if (knownHost.isInProxyMode()) continue;
 						if (knownHost.isInForwardMode()) continue;
 						if (proxyConnectionThreads.size()>2) break;
+						if (knownHost.isAskedForBeingMyProxy()) continue;
 						boolean alreadyConnected = false;
 						for (ProxyConnectionThread proxyConnectionThread: proxyConnectionThreads)
 							if (proxyConnectionThread.getProxyHost().equals( knownHost))

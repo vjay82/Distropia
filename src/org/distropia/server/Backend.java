@@ -32,6 +32,7 @@ import org.distropia.server.communication.lowlevel.Autoconf;
 import org.distropia.server.database.CommunicationDatabase;
 import org.distropia.server.database.UserProfiles;
 import org.distropia.server.platformspecific.PlatformSpecific;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -321,8 +322,12 @@ public class Backend extends HttpServlet implements ServletContextListener{
 				{
 					logger.error("got request from identical unique host id");
 					PingResponse pingResponse = new PingResponse( uniqueHostId);
-					response.addHeader( "encrypted", "false");
-					response.addHeader( "data", Base64.encode( pingResponse.toByteArray()));
+					byte[] data = pingResponse.toByteArray();
+					response.addHeader( "encrypted", "0");
+					response.setStatus( HttpServletResponse.SC_OK);
+					response.addHeader( HttpHeaders.Names.CONTENT_LENGTH, String.valueOf( data.length));
+					response.getOutputStream().write( data);
+					response.getOutputStream().close();
 					return;
 				}
 				

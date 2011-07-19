@@ -49,47 +49,48 @@ public class DHT {
 	protected CommunicationDatabase communicationDatabase;
 	protected volatile int externalPort = -1;
 	//protected boolean passiveMode = false;
-	protected boolean wasCreatedLocal = true;
+	protected boolean wasCreatedLocally = true;
 	protected int wasCreatedWithPort = 0;
+	protected String wasCreatedWithExternalInetAddress = null;
 	protected Number160 peerKey;
 	
 	public boolean isActive(){
 		return !needsBootstrap();
 	}
 	
-	public void manageDHT( boolean ignoreReachable) {
-		/*
-		if (!ignoreReachable && !Backend.getConnectionStatus().isReachable())
-		{
-			passiveMode = true;
-			if (peer != null){
-				peer.shutdown();
-				peer = null;
-			}
-			return;
-		}
-		*/
+	public void manageDHT( boolean dontBootstrap) {
+		
+		if (port < 1) port = Backend.getConnectionStatus().getInternetPort(true)+1;
+		if ((externalPort < 1) || (externalPort>65535)) externalPort = port;
+		System.out.println("manage DHT called ");
 		boolean changed = false;
 		if ((peer != null) && (peer.getConnectionBean() != null)) // if settings differ, modify
 		{
-			if (Backend.getConnectionStatus().isConnectedToInternetDirectly())
+			if ((Backend.getConnectionStatus().getInternetAddress() != null) && !Backend.getConnectionStatus().isConnectedToInternetDirectly() && (externalPort > -1))
 			{
-				if (!wasCreatedLocal) changed = true;
+				System.out.println("manage - IM BEHIND A IP ");
+				if (wasCreatedLocally) changed = true;
+				// TODO: fix the following commented line, because of bouncing ip/dns it could cause problems
+				//if (!Backend.getConnectionStatus().getInternetAddress().equals(wasCreatedWithExternalInetAddress)) changed = true;
+				if (wasCreatedWithPort != externalPort) changed = true;
 			}
 			else
 			{
-				try {
-					InetAddress inetAddress = InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress());
-					if (!peer.getPeerBean().getServerPeerAddress().getInetAddress().equals( inetAddress)) changed = true;
-				}
-				catch (Exception e) {
-				}
-				if (wasCreatedWithPort != externalPort) changed = true;
+				System.out.println("manage - IM LOCAL ");
+				if (!wasCreatedLocally) changed = true;
+				/*else{
+					try {
+						InetAddress inetAddress = InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress());
+						if (!peer.getPeerBean().getServerPeerAddress().getInetAddress().equals( inetAddress)) changed = true;
+					}
+					catch (Exception e) {
+					}
+				}*/
 			}		
 		}
 		else changed = true;
 		
-		
+		System.out.println("manage - i will recreate: " + changed);
 		
 		// create new
 		if (changed)
@@ -103,8 +104,6 @@ public class DHT {
 			peer = new Peer( peerKey);
 			peer.getConnectionConfiguration().setEnabledUPNPNAT( false);
 			
-			if (port < 1) port = Backend.getConnectionStatus().getInternetPort(true)+1;
-			if ((externalPort < 1) || (externalPort>65535)) externalPort = port;
 			for(int index = 0; index < 5; index++)
 			{
 				try {
@@ -112,15 +111,16 @@ public class DHT {
 					if ((Backend.getConnectionStatus().getInternetAddress() != null) && !Backend.getConnectionStatus().isConnectedToInternetDirectly() && (externalPort > -1))
 					{
 						//peer.
-						wasCreatedLocal = false;
+						wasCreatedLocally = false;
 						wasCreatedWithPort = externalPort;
+						wasCreatedWithExternalInetAddress = Backend.getConnectionStatus().getInternetAddress();
 						logger.info("recreating peer because of a change - running on " + Backend.getConnectionStatus().getInternetAddress() + " at port " + externalPort);
 						
 						if (Backend.getPlatformSpecific() instanceof PlatformWindows){
 							// temporary workaround, it seems windows 7 has problems, if a network interface is not of the same protocol family
 							// TODO: find a better solution
 							Protocol protocol = Protocol.IPv4;
-							if (Backend.getConnectionStatus().getInternetAddress().contains(":")) protocol = protocol.IPv6;									
+							if (Backend.getConnectionStatus().getInternetAddress().contains(":")) protocol = Protocol.IPv6;									
 							Bindings b = new Bindings( protocol);
 							b.setOutsideAddress( InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress()), externalPort, externalPort);
 							peer.listen( port, port, b);
@@ -135,7 +135,7 @@ public class DHT {
 					}
 					else {
 						peer.listen( port, port);
-						wasCreatedLocal = true;
+						wasCreatedLocally = true;
 						logger.info("recreating peer because of a change - running on localhost at port " + port);
 					}
 					
@@ -191,7 +191,7 @@ public class DHT {
 		
 		
 		
-		if (needsBootstrap() && Backend.getConnectionStatus().isConnectedToInternet())
+		if (!dontBootstrap && needsBootstrap() && Backend.getConnectionStatus().isConnectedToInternet())
 		{
 			bootstrapFromKnownHosts( Backend.getMyKnownHosts().getKnownHostsWithHighesAccessTimeFirstWhichAreDirectlyAccessible( 10));
 		}
