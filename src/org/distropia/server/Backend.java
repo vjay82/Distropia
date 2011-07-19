@@ -479,4 +479,8 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	public static void setConnectionTestId(String connectionTestId){
 		getInstance().connectionTestId = connectionTestId;
 	}
+	
+	public static PlatformSpecific getPlatformSpecific(){
+		return getInstance().platformSpecific;
+	}
 }

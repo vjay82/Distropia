@@ -25,7 +25,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.xerces.impl.dv.util.Base64;
 import org.distropia.server.Backend;
 import org.distropia.server.database.EncryptableObject;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
@@ -50,14 +49,14 @@ public class KnownHost{
 	
 	// all properties that are not serialized (serialization was removed, but who knows, let that in)
 	
-	protected transient KeyPair keyPair = null;
-	protected transient PublicKey foreignPublicKey = null;
-	protected transient Map<String, Object> stateCache = new HashMap<String, Object>();
-	protected transient boolean importantHost = false; // will be true if friend of a user is on this host (it will be saved longer in database)
-	protected transient boolean securingConnection = false;
-	protected transient KnownHosts knownHosts = null;
-	protected transient long nextDHTLookup = 0;
-	protected transient long lastAskedForBeingMyProxy = 0;
+	protected transient KeyPair keyPair = null; // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient PublicKey foreignPublicKey = null; // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient Map<String, Object> stateCache = new HashMap<String, Object>(); // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient boolean importantHost = false; // will be true if friend of a user is on this host (it will be saved longer in database) // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient boolean securingConnection = false; // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient KnownHosts knownHosts = null; // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient long nextDHTLookup = 0; // $codepro.audit.disable transientFieldInNonSerializable
+	protected transient long lastAskedForBeingMyProxy = 0; // $codepro.audit.disable transientFieldInNonSerializable
 	
 	// other properties
 	

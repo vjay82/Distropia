@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.tomp2p.connection.Bindings;
+import net.tomp2p.connection.Bindings.Protocol;
 import net.tomp2p.futures.BaseFutureListener;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.futures.FutureDHT;
@@ -32,6 +33,7 @@ import org.distropia.server.communication.GiveMeYourDHTPortResponse;
 import org.distropia.server.communication.KnownHost;
 import org.distropia.server.communication.KnownHosts;
 import org.distropia.server.database.CommunicationDatabase;
+import org.distropia.server.platformspecific.PlatformWindows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,17 +109,28 @@ public class DHT {
 			{
 				try {
 					
-					if (!Backend.getConnectionStatus().isConnectedToInternetDirectly() && (externalPort > -1))
+					if ((Backend.getConnectionStatus().getInternetAddress() != null) && !Backend.getConnectionStatus().isConnectedToInternetDirectly() && (externalPort > -1))
 					{
 						//peer.
 						wasCreatedLocal = false;
 						wasCreatedWithPort = externalPort;
 						logger.info("recreating peer because of a change - running on " + Backend.getConnectionStatus().getInternetAddress() + " at port " + externalPort);
-						Bindings b = new Bindings(false);
-						b.setOutsideAddress( InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress()), externalPort, externalPort);
-						peer.listen( port, port, b);
-						//peer.getPeerBean().setServerPeerAddress( new PeerAddress( peer.getPeerBean().getServerPeerAddress().getID(), InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress()), externalPort, externalPort, true, true));
-						//peer.getBindings().setOutsideAddress( InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress()), externalPort, externalPort);
+						
+						if (Backend.getPlatformSpecific() instanceof PlatformWindows){
+							// temporary workaround, it seems windows 7 has problems, if a network interface is not of the same protocol family
+							// TODO: find a better solution
+							Protocol protocol = Protocol.IPv4;
+							if (Backend.getConnectionStatus().getInternetAddress().contains(":")) protocol = protocol.IPv6;									
+							Bindings b = new Bindings( protocol);
+							b.setOutsideAddress( InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress()), externalPort, externalPort);
+							peer.listen( port, port, b);
+						}
+						else{
+							Bindings b = new Bindings( false);
+							b.setOutsideAddress( InetAddress.getByName( Backend.getConnectionStatus().getInternetAddress()), externalPort, externalPort);
+							peer.listen( port, port, b);
+						}
+						
 						
 					}
 					else {

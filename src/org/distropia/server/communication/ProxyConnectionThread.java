@@ -16,7 +16,7 @@ public class ProxyConnectionThread extends Thread {
 	
 	private KnownHost proxyHost = null;
 	private volatile boolean accepted = false;
-	protected static transient Logger logger = LoggerFactory.getLogger(ProxyConnectionThread.class);
+	protected static transient Logger logger = LoggerFactory.getLogger(ProxyConnectionThread.class); // $codepro.audit.disable transientFieldInNonSerializable
 	protected String contractId = null;
 	
 	

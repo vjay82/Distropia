@@ -38,7 +38,7 @@ public class ConnectionStatus {
 	protected String lastInternetAddress = null;
 	protected java.util.Timer testConnectionTimer = null;
 	protected volatile boolean needsBootstrap = false;
-	private static transient Logger logger = LoggerFactory.getLogger(ConnectionStatus.class);
+	private static transient Logger logger = LoggerFactory.getLogger(ConnectionStatus.class); // $codepro.audit.disable transientFieldInNonSerializable
 	protected ArrayList<ProxyConnectionThread> proxyConnectionThreads = new ArrayList<ProxyConnectionThread>();
 	protected ArrayList<RemoveAddressFromHostIfOnlineItem> removeAddressFromHostIfOnline = new ArrayList<RemoveAddressFromHostIfOnlineItem>();
 	protected long nextConnectionCheckAt = System.currentTimeMillis() + 1000;

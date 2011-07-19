@@ -291,7 +291,7 @@ public class Autoconf implements Maintenanceable {
 									else break;
 								}
 								if (success){
-									System.out.println("used dht port: " + externalDHTPort);
+									logger.info("UPNP was successful, used external port " + externalInternetPort + " for webserver and port " + externalDHTPort + " for DHT.");
 									Backend.getCommunicationDatabase().setProperty("lastUPNPMappedDHTPort", externalDHTPort);
 									Backend.getConnectionStatus().setExternalInternetPort( externalInternetPort);
 									Backend.getDHT().setExternalPort(externalDHTPort);
