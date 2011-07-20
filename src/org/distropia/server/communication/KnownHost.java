@@ -35,6 +35,10 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sleepycat.bind.tuple.TupleBinding;
+import com.sleepycat.bind.tuple.TupleInput;
+import com.sleepycat.bind.tuple.TupleOutput;
+
 
 /**
  * @author vjay
@@ -49,7 +53,6 @@ public class KnownHost{
 	protected static final int MAX_PROXYCACHE_ITEMS = 40;
 	protected static final long MAX_KEYSAVETIME_FOR_UNIMPORTANT_HOST = 60000 * 60 * 24; // 1 day
 	protected static final String KEY_SECURING_CONNECTION_LOCK = "securingConnectionLockedUntil";
-	protected static final int MAXIMUM_MESSAGE_SIZE = 1024*1024;
 	
 	// all properties that are not serialized (serialization was removed, but who knows, let that in)
 	
@@ -962,5 +965,5 @@ public class KnownHost{
 		if (uniqueHostId != null) return uniqueHostId;
 		return "No unique ID";
 	}
-	
+
 }

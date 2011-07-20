@@ -39,21 +39,23 @@ The first (desktop) client is written as a tomcat servlet. It is meant to run as
 6. What is done so far.
 The network layer is nearly finished. I have just begun creating the user databases. I'm sorry that the project is poorly documented and the client part is only in german so far. I'm releasing this far ahead of planned date and thought I would had some more weeks to test and built up the prototype until its initial running state. 
 
+7. Next Steps
+- Building the user database.
 
-7. How to get started
-a) download + install Java JDK >=1.6 
-b) download the Distropia sources from GitHub.com
-e) download Eclipse Indigo EE - edition from eclipse.org (use the EE edition or you will fail later)
-f) add the Google GWT Plugin to Eclipse (google will help)
-g) download actual Apache Tomcat 7 and add it to Eclipse as a server (google will help)
-h) Import the project into Eclipse workspace
-i) Rightclick the project, select properties
-j) bind the JRE System Library to your library under: Java Build Path/Libraries
-k) go to Google/Web Toolkit, deselect "Use Google Webtoolkit"
-l) open properties again, go to Google/Web Toolkit, select "Use Google Webtoolkit"
-m) go to Java Build Path/Order and Export
-n) make sure GWT is the second entry, just after Distropia/src
-o) save and you are ready to go, how to run a WebProject on a TomcatServer, please use google
-p) When the program runs in tomcat, you could access its webpage at http://localhost:8080/Distropia as long as DEBUG_PRINT_DEBUGPAGE_ON_GET is switched to true, you could see a debug page at http://localhost:8080/Distropia/Backend
+8. How to get started
+- Download and install Java JDK >=1.6. 
+- Download the Distropia sources from GitHub.com.
+- Download Eclipse Indigo EE - Edition from eclipse.org (use the EE edition, or you will fail later).
+- Add the Google GWT Plugin to Eclipse (google will help).
+- Download actual Apache Tomcat 7 and add it to Eclipse as a server (google will help).
+- Import the project into Eclipse workspace.
+- Rightclick the project, select properties.
+- Under "Java Build Path/Libraries" bind the JRE System Library to your library 
+- Go to Google/Web Toolkit, deselect "Use Google Webtoolkit"
+- Open properties again, go to Google/Web Toolkit, select "Use Google Webtoolkit"
+- Go to Java Build Path/Order and Export
+- Make sure GWT is the second entry, just after Distropia/src
+- Save and you are ready to go, how to run a WebProject on a TomcatServer, please again use google
+- When the program runs in tomcat, you could access its webpage at http://localhost:8080/Distropia as long as DEBUG_PRINT_DEBUGPAGE_ON_GET is switched to true, you could see a debug page at http://localhost:8080/Distropia/Backend
 
-8. Contact me at vjay at gmx.net
+9. Contact me at vjay at gmx.net

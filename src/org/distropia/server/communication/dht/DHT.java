@@ -58,17 +58,21 @@ public class DHT {
 		return !needsBootstrap();
 	}
 	
+	/**
+	 * This is in progress.
+	 * @param dontBootstrap
+	 */
 	public void manageDHT( boolean dontBootstrap) {
 		
 		if (port < 1) port = Backend.getConnectionStatus().getInternetPort(true)+1;
 		if ((externalPort < 1) || (externalPort>65535)) externalPort = port;
-		System.out.println("manage DHT called ");
+		
 		boolean changed = false;
 		if ((peer != null) && (peer.getConnectionBean() != null)) // if settings differ, modify
 		{
 			if ((Backend.getConnectionStatus().getInternetAddress() != null) && !Backend.getConnectionStatus().isConnectedToInternetDirectly() && (externalPort > -1))
 			{
-				System.out.println("manage - IM BEHIND A IP ");
+				//System.out.println("manage - IM BEHIND A IP ");
 				if (wasCreatedLocally) changed = true;
 				// TODO: fix the following commented line, because of bouncing ip/dns it could cause problems
 				//if (!Backend.getConnectionStatus().getInternetAddress().equals(wasCreatedWithExternalInetAddress)) changed = true;
@@ -76,7 +80,7 @@ public class DHT {
 			}
 			else
 			{
-				System.out.println("manage - IM LOCAL ");
+				//System.out.println("manage - IM LOCAL ");
 				if (!wasCreatedLocally) changed = true;
 				/*else{
 					try {
@@ -90,7 +94,7 @@ public class DHT {
 		}
 		else changed = true;
 		
-		System.out.println("manage - i will recreate: " + changed);
+		//System.out.println("manage - i will recreate: " + changed);
 		
 		// create new
 		if (changed)
@@ -159,7 +163,7 @@ public class DHT {
 						@Override
 						public void peerInserted(PeerAddress peerAddress) {
 							try {
-								communicationDatabase.insertPeerAddress(peerAddress);
+								communicationDatabase.setPeerAddress(peerAddress);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -361,6 +365,27 @@ public class DHT {
 		}
 		return null;
 	}
+	
+	public boolean bootstrapFromPeerAddress( ArrayList<PeerAddress> peerAddresses){
+		if ((peer == null) || (!peer.isListening())){
+			logger.error("Aborting Bootstrap because peer is null, or not listening!");
+			return false;
+		}		
+		
+		logger.info("Bootstrapping DHT");
+		try 
+		{ 
+			FutureBootstrap future = peer.bootstrap( peerAddresses);
+			future.await(5000);
+			if (future.isSuccess()) logger.info("Bootstrapping DHT succeeded, contacts now: " + getContacts());
+			else logger.error("Bootstrapping failed because: " + future.getFailedReason());
+			
+		} catch (Exception e) {
+		}
+		
+		return !needsBootstrap();
+	}
+	
 	
 	public boolean bootstrapFromInetSocketAddress( ArrayList<InetSocketAddress> inetSocketAddresses){
 		if ((peer == null) || (!peer.isListening())){

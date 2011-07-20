@@ -257,26 +257,32 @@ public class ConnectionStatus {
 			if (!connectedToInternet){
 				DHT dht = Backend.getDHT();
 				if (dht.needsBootstrap() || (knownHosts.size() == 0)){
-					ArrayList<InetSocketAddress> bootstrapFrom = new ArrayList<InetSocketAddress>(5);
-					for(int index=0; index<4; index++){
-						InetSocketAddress randomPeer = Backend.getCommunicationDatabase().getRandomPeerAddress();
-						if (randomPeer != null){
-							if (!bootstrapFrom.contains( randomPeer)) bootstrapFrom.add( randomPeer);
+					try{
+						ArrayList<PeerAddress> bootstrapFrom = new ArrayList<PeerAddress>(5);
+						for(int index=0; index<4; index++){
+							PeerAddress randomPeer = Backend.getCommunicationDatabase().getRandomPeerAddress();
+							if (randomPeer != null){
+								if (!bootstrapFrom.contains( randomPeer)) bootstrapFrom.add( randomPeer);
+							}
 						}
-					}
-					
-					if ((bootstrapFrom.size() > 0) && (dht.bootstrapFromInetSocketAddress( bootstrapFrom))){ // successful bootstrap, now we can get some knownHosts from DHT
-						ArrayList<PeerAddress> fetchFrom = new ArrayList<PeerAddress>();
-						fetchFrom.addAll( dht.getKnownPeers());
-						int max = KnownHosts.MINIMUM_LIST_SIZE;
-						for(PeerAddress peerAddress: fetchFrom){
-							if (dht.getKnownHostOfPeerAddress(peerAddress) != null) // is already added	to knownHosts
-							{
-								max--;
-								if (max==0) break;
+						
+						if ((bootstrapFrom.size() > 0) && (dht.bootstrapFromPeerAddress( bootstrapFrom))){ // successful bootstrap, now we can get some knownHosts from DHT
+							ArrayList<PeerAddress> fetchFrom = new ArrayList<PeerAddress>();
+							fetchFrom.addAll( dht.getKnownPeers());
+							int max = KnownHosts.MINIMUM_LIST_SIZE;
+							for(PeerAddress peerAddress: fetchFrom){
+								if (dht.getKnownHostOfPeerAddress(peerAddress) != null) // is already added	to knownHosts
+								{
+									max--;
+									if (max==0) break;
+								}
 							}
 						}
 					}
+					catch (Exception e) {
+						logger.error("error loading peers from database for DHT bootstrap", e);
+					}
+					
 				}
 			}
 			

@@ -22,20 +22,12 @@ import org.apache.xerces.impl.dv.util.Base64;
 import org.distropia.client.UserCredentials;
 
 public class PrivateUserDatabase extends UserDatabase {
-	public static final String TABLE_HASHEDPASSWORDS = "HashedPasswords";
-	public static final String TABLE_ASYMMETRIC_KEYS = "AsymmetricKeys";
-	public static final String TABLE_TRUSTEDUSERS = "TrustedUsers";
-	
+
 	public static final String KEY_USERNAME = "userName";
 	public static final String KEY_USERPASSWORD = "userPassword";
 	public static final String KEY_CREDENTIALS = "credentials";
 	
 	protected SecretKeySpec userPassword = null;
-	
-	/**
-	 * contains password, every uid knows for encrypting messages, pictures and so on, so that only that uids can see them
-	 */
-	private static final String TABLE_USERGROUPS = "UserGroups";
 	
 
 	public void setUserPasswordForDecryption(SecretKeySpec userPassword) {
@@ -46,17 +38,6 @@ public class PrivateUserDatabase extends UserDatabase {
 		super(databaseFile);
 	}
 
-	@Override
-	protected void createDefaultTables(Statement statement) throws SQLException {
-		super.createDefaultTables(statement);
-		statement.executeUpdate("create table if not exists " + TABLE_HASHEDPASSWORDS + " (key TEXT PRIMARY KEY, password BLOB, salt BLOB, updateTime INTEGER);");
-		statement.executeUpdate("create table if not exists " + TABLE_ASYMMETRIC_KEYS + " (userUID TEXT PRIMARY KEY, privateKey BLOB, publicKey BLOB, updateTime INTEGER);");
-		statement.executeUpdate("create table if not exists " + TABLE_USERGROUPS + " (userUID TEXT, sharedSecret BLOB, isInternalGroup BOOLEAN, groupName TEXT, updateTime INTEGER);");
-		statement.executeUpdate("create table if not exists " + TABLE_TRUSTEDUSERS + " (userUID TEXT PRIMARY KEY, publicKey BLOB, updateTime INTEGER);");
-	}
-	
-	
-	
 	public HashedPassword getHashedUserPassword() throws SQLException
 	{
 		return getHashedPassword( KEY_USERPASSWORD);
@@ -64,6 +45,7 @@ public class PrivateUserDatabase extends UserDatabase {
 	
 	public HashedPassword getHashedPassword(String key) throws SQLException
 	{
+		/*
 		Statement stat = connection.createStatement();
 		try {
 			ResultSet rs = stat.executeQuery("select password, salt from "+TABLE_HASHEDPASSWORDS+" WHERE key = \"" + key + "\";");
@@ -79,7 +61,8 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
-		}
+		}*/
+		return null;
 	}
 	
 	public UserCredentials getCredentials( ) throws Exception{
@@ -98,25 +81,26 @@ public class PrivateUserDatabase extends UserDatabase {
 	
 	public void setUsername( String userName) throws Exception
 	{
-		setEncryptedProperty( KEY_USERNAME, filterDataBaseString( userName));
+		//setEncryptedProperty( KEY_USERNAME, filterDataBaseString( userName));
 	}
 	
 	public String getEncryptedProperty( String key, String defaultValue) throws Exception
 	{
-		throwUserPasswordIsNullException();
+		return defaultValue;
+		/*throwUserPasswordIsNullException();
 		String newDefaultValue = null;
 		if (defaultValue != null) newDefaultValue = encrypt( defaultValue);
 		String result = super.getProperty(key, newDefaultValue);
 		if (result == null) return null;
-		return decrypt( result);
+		return decrypt( result);*/
 	}
 	
 	public void setEncryptedProperty( String key, String value) throws Exception
 	{
-		throwUserPasswordIsNullException();
+	/*	throwUserPasswordIsNullException();
 		String newValue = null;
 		if (value != null) newValue = encrypt( value);
-		super.setProperty(key, newValue);
+		super.setProperty(key, newValue);*/
 	}
 	
 	public void setHashedUserPassword( HashedPassword hashedPassword) throws Exception
@@ -131,7 +115,7 @@ public class PrivateUserDatabase extends UserDatabase {
 	
 	public void setHashedPassword( String key, HashedPassword hashedPassword) throws Exception
 	{
-		try {
+		/*try {
 			PreparedStatement prep = connection.prepareStatement(
 			  "update "+TABLE_HASHEDPASSWORDS+" set password = ?, salt = ?, updateTime = ? WHERE key = \"" + key+ "\";" );
 
@@ -158,12 +142,12 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) { // selbe wie oben...
 			e.printStackTrace();
 			logger.error("Error setting hashed password " + key + " at database " + getName(), e);			
-		}
+		}*/
 	}
 	
 	public KeyPair getAsymmetricKeys(String userUID, boolean couldGenerateNew) throws Exception
 	{
-		throwUserPasswordIsNullException();
+		/*throwUserPasswordIsNullException();
 		KeyPair result = null;
 		Statement stat = connection.createStatement();
 		try {
@@ -198,12 +182,12 @@ public class PrivateUserDatabase extends UserDatabase {
 				logger.error("error creating keypair for node uid " + userUID, e);
 			} 
 		}
-		return result;
+		return result;*/ return null;
 	}
 	
 	public void setAsymmetricKeys( String userUID, KeyPair keyPair) throws Exception
 	{
-		throwUserPasswordIsNullException();
+		/*throwUserPasswordIsNullException();
 		try {
 			PreparedStatement prep = connection.prepareStatement(
 			  "update " + TABLE_ASYMMETRIC_KEYS + " set privateKey = ?, publicKey = ?, updateTime = ? WHERE userUID = \"" + userUID+ "\";" );
@@ -234,7 +218,7 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) { // selbe wie oben...
 			e.printStackTrace();
 			logger.error("Error setting async key " + userUID + " at database " + getName(), e);			
-		}
+		}*/
 	}
 	
 	protected byte[] encrypt(byte[] in) throws Exception
@@ -267,7 +251,8 @@ public class PrivateUserDatabase extends UserDatabase {
 
 	public ArrayList<UserGroup> getUserGroups( String whereStatement) throws Exception
 	{
-		throwUserPasswordIsNullException();
+		return null;
+		/*throwUserPasswordIsNullException();
 		ArrayList<UserGroup> result = new ArrayList<UserGroup>();
 		Statement stat = connection.createStatement();
 		try {
@@ -296,12 +281,13 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return result;
+		return result;*/
 	}
 	
 	public ArrayList<TrustedUser> getTrustedUsers() throws Exception
 	{
-		ArrayList<TrustedUser> result = new ArrayList<TrustedUser>();
+		return null;
+		/*ArrayList<TrustedUser> result = new ArrayList<TrustedUser>();
 		Statement stat = connection.createStatement();
 		try {
 			String query = "select userUID, publicKey from " + TABLE_TRUSTEDUSERS;
@@ -325,11 +311,11 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return result;
+		return result;*/
 	}
 	
 	public void deleteTrustedUser( TrustedUser trustedUser) throws Exception
-	{
+	{/*
 		try {
 			Statement statement = connection.createStatement();
 			try 
@@ -343,11 +329,11 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) { // selbe wie oben...
 			e.printStackTrace();
 			logger.error("Error deleting userUID " + trustedUser.getUserUID() + " at database " + getName(), e);			
-		}
+		}*/
 	}
 	
 	public void setTrustedUser( TrustedUser trustedUser) throws Exception
-	{
+	{/*
 		try {
 			PreparedStatement prep = connection.prepareStatement(
 			  "update " + TABLE_TRUSTEDUSERS + " set publicKey = ?, updateTime = ? WHERE userUID = \"" + trustedUser.getUserUID() + "\";" );
@@ -374,7 +360,7 @@ public class PrivateUserDatabase extends UserDatabase {
 		} catch (SQLException e) { // selbe wie oben...
 			e.printStackTrace();
 			logger.error("Error setting userUID " + trustedUser.getUserUID() + " at database " + getName(), e);			
-		}
+		}*/
 	}
 	
 	

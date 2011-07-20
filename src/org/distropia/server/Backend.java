@@ -73,7 +73,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	public static final boolean DEBUG_PRINT_DEBUGPAGE_ON_GET = true;
 	public static final boolean DEBUG_DISABLE_PRIVATE_IP_CHECK = false;
 	public static final boolean DEBUG_SHORT_PROXYCOMMANDS = false;
-	public static final boolean DEBUG_SHOW_KNOWNHOST_SENDCOMMAND_STACKTRACES = true;
+	public static final boolean DEBUG_SHOW_KNOWNHOST_SENDCOMMAND_STACKTRACES = false;
 	
 	
 	// static
@@ -106,13 +106,6 @@ public class Backend extends HttpServlet implements ServletContextListener{
     	super.init(config);
         instance= this;
         platformSpecific = PlatformSpecific.createPlatformSpecific( APPLICATION_NAME);
-        
-        try {
-			Class.forName("org.sqlite.JDBC");
-		} catch (ClassNotFoundException e1) {
-			e1.printStackTrace();
-			logger.error( "Error initializing SQLite", e1);
-		}
         
 		int port = 8080;
 		
@@ -151,19 +144,10 @@ public class Backend extends HttpServlet implements ServletContextListener{
 			userProfiles = new UserProfiles( userProfileDirectory);
 			maintenanceList.addWithWeakReference( userProfiles, 30000);
 			
-			
-			File communicationDirectory = new File( workDir + "communication");
-			if ((!communicationDirectory.exists()) && (!communicationDirectory.mkdirs())) throw new Exception("Could not create path " + communicationDirectory.getAbsolutePath());
-			
 			configuration = new Configuration( new File( workDir + "configuration.xml"));
-			communicationDatabase = new CommunicationDatabase( new File( communicationDirectory.getAbsolutePath() + File.separator + "communicationDatabase.db"));
-			uniqueHostId = communicationDatabase.getUniqueHostId();
-			
-			//dhtDatabase = new DHTDatabase( new File( communicationDirectory.getAbsolutePath() + getFileSeparator() + "dhtDatabase.db"));
-			String dhtStorageDirectory = communicationDirectory.getAbsolutePath() + File.separator + "dht";
-			File dhtStorageFile = new File(dhtStorageDirectory);
-			if ((!dhtStorageFile.exists()) && (!dhtStorageFile.mkdirs()))  throw new Exception("Could not create path " + dhtStorageDirectory);
-			dht = new DHT( communicationDatabase, dhtStorageDirectory);
+			communicationDatabase = new CommunicationDatabase( new File( workDir + "communicationDatabase"));			
+			uniqueHostId = communicationDatabase.getUniqueHostId();			
+			dht = new DHT( communicationDatabase, workDir + "dhtDatabase");
 			
 			myKnownHosts = new KnownHosts( communicationDatabase);
 			connectionStatus = new ConnectionStatus( port);
@@ -281,8 +265,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 			ArrayList<KnownHost> knownHosts = getMyKnownHosts();
 			synchronized (knownHosts) {
 				for(KnownHost knownHost : knownHosts)
-					body.append(" uid: " + knownHost.getUniqueHostId()  +" encryption enabled: " + knownHost.isSecureConnection() + " Addresses: " + Arrays.toString( knownHost.getAddresses().toArray())+"<br>");
-					
+					body.append(" uid: " + knownHost.getUniqueHostId()  +" encryption enabled: " + knownHost.isSecureConnection() + " Addresses: " + Arrays.toString( knownHost.getAddresses().toArray())+"<br>");					
 			}
 			body.append("</body></html>");
 			ServletOutputStream servletOutputStream = response.getOutputStream();

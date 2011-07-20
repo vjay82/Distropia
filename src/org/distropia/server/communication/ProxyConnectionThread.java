@@ -113,18 +113,18 @@ public class ProxyConnectionThread extends Thread {
 						else{
 							
 							boolean encrypted;
-							String data;
+							byte[] data;
 							if (knownHost.getForeignPublicKey() == null) // no encryption possible
 							{
 								encrypted = false;
-								data = Base64.encode( ssc.toByteArray());
+								data = ssc.toByteArray();
 							}
 							else
 							{
 								encrypted = true;
-								data = Base64.encode( ssc.encrypt( knownHost.getForeignPublicKey()));
+								data = ssc.encrypt( knownHost.getForeignPublicKey());
 							}
-							if ((data != null) && (data.length() > ProxyCache.MAX_REQUEST_SIZE_FOR_NORMAL_PROXYRESPONSE))
+							if ((data != null) && (data.length > ProxyCache.MAX_REQUEST_SIZE_FOR_NORMAL_PROXYRESPONSE))
 							{ // using a BigRequest fetch thread to upload the response
 								logger.info("sending via DownloadBigRequestThread because response " + ssc.getClass().getSimpleName() + " is too big");
 								ArrayList<WrappedServerCommandResponse> tmpAnswer = new ArrayList<WrappedServerCommandResponse>(1);

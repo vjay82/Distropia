@@ -7,7 +7,7 @@ public class WrappedServerCommandResponse extends DefaultServerResponse {
 	 */
 	private static final long serialVersionUID = -585409599890734716L;
 	protected Boolean encrypted;
-	protected String data;
+	protected byte[] data;
 	protected int entryNumber = 0;
 	
 	
@@ -23,19 +23,19 @@ public class WrappedServerCommandResponse extends DefaultServerResponse {
 	public void setEncrypted(Boolean encrypted) {
 		this.encrypted = encrypted;
 	}
-	public String getData() {
+	public byte[] getData() {
 		return data;
 	}
-	public void setData(String data) {
+	public void setData(byte[] data) {
 		this.data = data;
 	}
-	public WrappedServerCommandResponse(Boolean encrypted, String data) {
+	public WrappedServerCommandResponse(Boolean encrypted, byte[] data) {
 		super();
 		this.encrypted = encrypted;
 		this.data = data;
 	}
 	
-	public WrappedServerCommandResponse(Boolean encrypted, String data,
+	public WrappedServerCommandResponse(Boolean encrypted, byte[] data,
 			int entryNumber) {
 		super();
 		this.encrypted = encrypted;
