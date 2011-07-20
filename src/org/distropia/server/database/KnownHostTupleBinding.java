@@ -16,9 +16,12 @@ public class KnownHostTupleBinding extends TupleBinding<KnownHost> {
 
 	@Override
 	public KnownHost entryToObject(TupleInput ti) {
-		KnownHost knownHost = new KnownHost( ti.readString());
+		KnownHost knownHost = new KnownHost( );
 		
-		try{
+		knownHost.setLastAccess( ti.readLong());
+		knownHost.setUniqueHostId( ti.readString());
+		
+		try{			
 			KeyFactory kf = KeyFactory.getInstance("RSA");
 			int length = ti.readInt();
 			byte[] data = new byte[length];
@@ -55,6 +58,7 @@ public class KnownHostTupleBinding extends TupleBinding<KnownHost> {
 	public void objectToEntry(KnownHost knownHost, TupleOutput to) {
 		
 		try {
+			to.writeLong( knownHost.getLastAccess());
 			to.writeString( knownHost.getUniqueHostId());
 			byte[] data = knownHost.getKeyPair().getPrivate().getEncoded();
 			to.writeInt( data.length);
