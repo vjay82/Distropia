@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.distropia.server.Maintenanceable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Maintenanceable{
+public class UserProfiles extends ArrayList<UserProfile>{
 	/**
 	 * 
 	 */
@@ -16,7 +15,7 @@ public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Ma
 	private File userProfileDirectory = null;
 	static Logger logger = LoggerFactory.getLogger(UserProfiles.class);
 
-	public BasicUserProfiles(File userProfileDirectory) {
+	public UserProfiles(File userProfileDirectory) throws Exception {
 		super();
 		this.userProfileDirectory = userProfileDirectory;
 		loadUserProfiles();
@@ -24,18 +23,18 @@ public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Ma
 	
 	public void close()
 	{
-		for( BasicUserProfile basicUserProfile: this)
+		for( UserProfile basicUserProfile: this)
 		{
 			basicUserProfile.close();
 		}
 		clear();
 	}
 	
-	protected BasicUserProfile createUserProfile( File dataDirectory){
-		return new BasicUserProfile( dataDirectory);
+	protected UserProfile loadUserProfile( File dataDirectory) throws Exception{
+		return new UserProfile( dataDirectory);
 	}
 	
-	private void loadUserProfiles() 
+	private void loadUserProfiles() throws Exception 
     {
 		logger.info("loading userProfiles from directory " + userProfileDirectory.getAbsolutePath());
     	File[] entries = userProfileDirectory.listFiles();
@@ -43,7 +42,7 @@ public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Ma
     	{
     		if (entry.isDirectory())
     		{
-    			add( createUserProfile( entry));
+    			add( loadUserProfile( entry));
     		}
     	}
     }
@@ -53,18 +52,17 @@ public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Ma
 		return java.util.UUID.randomUUID().toString().replaceAll("-", "");
 	}
 	
-	public BasicUserProfile createNewUser(){
+	public UserProfile createNewUser() throws Exception{
 		
 		int tryCount = 100;
 		do {
 			String uniqueUserID = createNewUniqueUserID();
 			File dataDirectory = new File( userProfileDirectory.getAbsolutePath() + File.separator + uniqueUserID);
-			if (dataDirectory.exists() || dataDirectory.mkdirs()) // creating directory
+			if (!dataDirectory.exists() && dataDirectory.mkdirs())
 			{
-				BasicUserProfile basicUser = createUserProfile( dataDirectory);
+				UserProfile basicUser = loadUserProfile( dataDirectory);
 				try {
-					basicUser.getPrivateUserDatabase().setUniqueUserID(uniqueUserID);
-					basicUser.getPublicUserDatabase().setUniqueUserID(uniqueUserID);
+					basicUser.setUniqueUserID(uniqueUserID);
 					return basicUser;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -79,6 +77,18 @@ public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Ma
 			}
 			tryCount--;
 		} while (tryCount>0);
+		return null;
+	}
+	
+	public synchronized UserProfile login( String userName, String password) throws Exception{
+		logger.info("login called " + userName);
+		if (size()==0) logger.error(" ... but i have no users.");
+		Thread.sleep(1000); // anti brute force
+		for(UserProfile userProfile: this){
+			if (userProfile.login(userName, password)){
+				return userProfile;
+			}			
+		}
 		return null;
 	}
 	
@@ -102,12 +112,6 @@ public class BasicUserProfiles extends ArrayList<BasicUserProfile> implements Ma
 	
 	public File getUserProfileDirectory() {
 		return userProfileDirectory;
-	}
-
-	@Override
-	public synchronized void maintenance() {
-		for(BasicUserProfile basicUserProfile: this)
-			basicUserProfile.maintenance();
 	}
 	
 }

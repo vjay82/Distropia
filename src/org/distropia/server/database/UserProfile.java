@@ -2,86 +2,20 @@ package org.distropia.server.database;
 
 
 import java.io.File;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PublicKey;
 
-import org.distropia.server.Maintenanceable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BasicUserProfile implements Maintenanceable{
-	
-	static Logger logger = LoggerFactory.getLogger(BasicUserProfile.class);
-	
-	protected File dataDirectory = null;
+public class UserProfile extends UserDatabase{
+	protected static final Logger logger = LoggerFactory.getLogger(UserProfile.class);
 	protected String uniqueUserID = null;
-	protected PrivateUserDatabase privateUserDatabase = null;
-	protected PublicUserDatabase publicUserDatabase = null;
-	protected long privateUserDatabaseLastAccess = 0;
-	protected long publicUserDatabaseLastAccess = 0;
+	protected PublicKey publicKey = null;
 	
-	public synchronized void closePrivateUserDatabase(){
-		if (privateUserDatabase != null)
-		{
-			privateUserDatabase.close();
-			privateUserDatabase = null;
-		}
-	}
-	
-	public synchronized void closePublicUserDatabase(){
-		if (publicUserDatabase != null)
-		{
-			publicUserDatabase.close();
-			publicUserDatabase = null;
-		}
-	}
-	
-	public void close()
-	{		
-		closePrivateUserDatabase();
-		closePublicUserDatabase();
-	}
-	
-	protected File getPrivateDatabasePath() {
-		return new File( dataDirectory.getAbsolutePath() + File.pathSeparator + "privateDatabase.db");
-	}
-	
-	protected File getPublicDatabasePath() {
-		return new File( dataDirectory.getAbsolutePath() + File.pathSeparator + "publicDatabase.db");
-	}
-	
-	public BasicUserProfile( File dataDirectory) {
-		super();
-		
-		this.dataDirectory = dataDirectory;
-	}
-	
-	
-	public synchronized PrivateUserDatabase getPrivateUserDatabase() throws Exception
-	{
-		privateUserDatabaseLastAccess = System.currentTimeMillis();
-		if (privateUserDatabase == null)
-		{
-			privateUserDatabase = new PrivateUserDatabase( getPrivateDatabasePath());
-		}
-		return privateUserDatabase;		
-	}
-	
-	
-	public synchronized PublicUserDatabase getPublicUserDatabase() throws Exception
-	{
-		publicUserDatabaseLastAccess = System.currentTimeMillis();
-		if (publicUserDatabase == null)
-		{
-			publicUserDatabase = new PublicUserDatabase( getPublicDatabasePath());		
-		}
-		return publicUserDatabase;		
-	}
-
-	public File getDataDirectory() {
-		return dataDirectory;
-	}
-
-	public void setDataDirectory(File dataDirectory) {
-		this.dataDirectory = dataDirectory;
+	public UserProfile( File databasePath) throws Exception {
+		super( databasePath);
 	}
 
 	@Override
@@ -91,14 +25,65 @@ public class BasicUserProfile implements Maintenanceable{
 	}
 
 	public String getUniqueUserID() {
+		if (uniqueUserID == null)
+			try {
+				uniqueUserID = super.getUniqueUserID();
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("error loading uniqueUserID", e);
+			}
 		return uniqueUserID;
 	}
-
+	
+	
 	@Override
-	public synchronized void maintenance() {
-		long xMillisAgo = System.currentTimeMillis() - 60000;
-		if (privateUserDatabaseLastAccess < xMillisAgo) closePrivateUserDatabase();
-		if (publicUserDatabaseLastAccess < xMillisAgo) closePublicUserDatabase();
+	public void setKeyPairFor(String uniqueUserID) throws Exception {
+		if (getUniqueUserID().equals( uniqueUserID)) throw new Exception("You are not allowed oberwriting the users keypair.");
+		super.setKeyPairFor(uniqueUserID);
+	}
+
+	public synchronized boolean login( String userName, String password) throws Exception
+	{
+		logger.info("login user - " + this + " - trying login");
+		HashedPassword hashedPassword = getHashedUserPassword();
+		if (hashedPassword == null) return false;
+		if (hashedPassword.compare(password))
+		{
+			logger.info("login user - " + this + " - initializing password");
+			setEncryptionKey(password); // from now on encrypted access takes place
+			
+			if (userName.equalsIgnoreCase( getUserName()))
+			{
+				
+				System.out.println( "checkPropertiesSignature ergab: " + checkPropertiesSignature());
+				
+				return true;
+			}
+		}
+			
+		logger.info("login user - " + this + " - wrong password");
+		return false;
 	}
 	
+	public synchronized void initializeUser( String password) throws Exception
+	{
+		logger.info("creating User - creating hashed user password");
+		HashedPassword hashedUserPassword = new HashedPassword();
+		hashedUserPassword.createNew( password);
+		setHashedUserPassword( hashedUserPassword);
+		
+		logger.info("creating User - initializing userPassword");
+		setEncryptionKey(password); // from now on encrypted access could take place
+		
+		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+		keyPairGenerator.initialize( 2048);
+	    KeyPair keyPair = keyPairGenerator.genKeyPair();
+	    setUserPrivateKey( keyPair.getPrivate());
+	    setUserPublicKey( keyPair.getPublic());
+	}
+	
+	public synchronized PublicKey getUserPublicKey() throws Exception{
+		if (publicKey == null) publicKey = super.getUserPublicKey();
+		return publicKey;
+	}
 }
