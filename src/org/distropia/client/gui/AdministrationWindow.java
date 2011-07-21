@@ -8,6 +8,8 @@ import org.distropia.client.GetAdminSettingsResponse;
 import org.distropia.client.SetAdminSettingsRequest;
 import org.distropia.client.Utils;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -20,9 +22,9 @@ import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.HeaderItem;
+import com.smartgwt.client.widgets.form.fields.RowSpacerItem;
 import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
-import com.smartgwt.client.widgets.form.fields.RowSpacerItem;
 
 public class AdministrationWindow extends Window {
 	private Timer updateTimer = null;
@@ -45,7 +47,12 @@ public class AdministrationWindow extends Window {
 			public void onSuccess(DefaultUserResponse result) {
 				if (Distropia.manageSessionAndErrors( result))
 				{
-					destroy();	
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							destroy();
+						}
+					});
 				}
 			}
 			
@@ -248,11 +255,15 @@ public class AdministrationWindow extends Window {
 			}
 		});
 		bottomButtons.getButtonCancel().addClickHandler(new ClickHandler() {
-			
 			@Override
 			public void onClick(ClickEvent event) {
-				destroy();
-				
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					
+					@Override
+					public void execute() {
+						destroy();
+					}
+				});
 			}
 		});
 		addItem( bottomButtons);

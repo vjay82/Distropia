@@ -2,7 +2,6 @@ package org.distropia.server.communication;
 
 import java.util.ArrayList;
 
-import org.apache.xerces.impl.dv.util.Base64;
 import org.distropia.server.Backend;
 import org.distropia.server.database.EncryptableObject;
 import org.slf4j.Logger;

@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.xerces.impl.dv.util.Base64;
 import org.distropia.client.Utils;
 import org.distropia.server.communication.KnownHost;
 import org.distropia.server.communication.KnownHosts;
@@ -138,11 +137,11 @@ public class Backend extends HttpServlet implements ServletContextListener{
 		else workDir = platformSpecific.getMyApplicationSupportFolder();
 		
 		try {
-			File userProfileDirectory = new File( workDir + "userProfiles" + File.separator + "local");
+			File userProfileDirectory = new File( workDir + "userProfiles");
 			if ((!userProfileDirectory.exists()) && (!userProfileDirectory.mkdirs())) throw new Exception("Could not create path " + userProfileDirectory.getAbsolutePath());			
 			logger.info("Loading user profiles from " + userProfileDirectory.getAbsolutePath());
 			userProfiles = new UserProfiles( userProfileDirectory);
-			maintenanceList.addWithWeakReference( userProfiles, 30000);
+			//maintenanceList.addWithWeakReference( userProfiles, 30000);
 			
 			configuration = new Configuration( new File( workDir + "configuration.xml"));
 			communicationDatabase = new CommunicationDatabase( new File( workDir + "communicationDatabase"));			

@@ -37,6 +37,9 @@ public class PlatformLinux extends PlatformSpecific {
 			        child.waitFor();
 			        byte[] data = new byte[child.getInputStream().available()];
 			        child.getInputStream().read( data);
+			        child.getErrorStream().close();
+					child.getInputStream().close();
+					child.getOutputStream().close();
 			        String s1 = new String(data);
 			        if (s1.length()>0)
 			        {
@@ -75,6 +78,9 @@ public class PlatformLinux extends PlatformSpecific {
 			        child.waitFor();
 			        byte[] data = new byte[child.getInputStream().available()];
 			        child.getInputStream().read( data);
+			        child.getErrorStream().close();
+					child.getInputStream().close();
+					child.getOutputStream().close();
 			        String s1 = new String(data);
 			        if (s1.length()>0)
 			        {

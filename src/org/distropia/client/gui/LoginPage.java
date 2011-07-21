@@ -52,11 +52,11 @@ public class LoginPage extends Page {
 			Cookies.removeCookie("loginPanel_userName");
 			Cookies.removeCookie("loginPanel_password");
 			
-			Distropia.getRpcService().loginUser(new LoginUserRequest( (String)loginForm.getValue("userName"), (String)loginForm.getValue("password")), new AsyncCallback<LoginUserResponse>() {
+			Distropia.getRpcService().loginUser(new LoginUserRequest( loginForm.getValueAsString("userName"), (String)loginForm.getValueAsString("password")), new AsyncCallback<LoginUserResponse>() {
 				
 				@Override
 				public void onSuccess(LoginUserResponse loginUserResponse) {
-					loginForm.setValue("password", "");
+					show();
 					loginForm.enable();
 					if (Distropia.manageSessionAndErrors( loginUserResponse))
 					{
@@ -82,18 +82,20 @@ public class LoginPage extends Page {
 							{
 								Date expires = new Date();
 								expires.setTime(expires.getTime() + 14 * 24 * 60 * 60 * 1000);
-								Cookies.setCookie("loginPanel_userName", (String)loginForm.getValue("userName"), expires);
-								Cookies.setCookie("loginPanel_password", (String)loginForm.getValue("password"), expires);							
+								Cookies.setCookie("loginPanel_userName", loginForm.getValueAsString("userName"), expires);
+								Cookies.setCookie("loginPanel_password", loginForm.getValueAsString("password"), expires);							
 							}
 							
 							Distropia.setSessionId( loginUserResponse.getSessionId());
 							Distropia.setCurrentPage( new MainPage());
 						}
 					}
+					loginForm.setValue("password", "");
 				}
 				
 				@Override
-				public void onFailure(Throwable throwable) {					
+				public void onFailure(Throwable throwable) {
+					show();
 					loginForm.setValue("password", "");
 					loginForm.enable();
 					Distropia.manageSessionAndErrors( throwable);
@@ -181,12 +183,13 @@ public class LoginPage extends Page {
 		if (!Distropia.getClientDataStore().containsKey("didAutoLogin"))
 		{
 			Distropia.getClientDataStore().put("didAutoLogin", "");
-			String user = Cookies.getCookie( "loginPanel_userName");
-			if (user != null) loginForm.setValue("userName", userNameItem);
+			String userName = Cookies.getCookie( "loginPanel_userName");
+			if (userName != null) loginForm.setValue("userName", userName);
 			String password = Cookies.getCookie( "loginPanel_password");
 			if (password != null)
 			{
 				loginForm.setValue("password", password);
+				hide();
 				doLogin( true);
 			}	
 		}

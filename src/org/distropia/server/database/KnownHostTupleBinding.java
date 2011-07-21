@@ -11,6 +11,7 @@ import org.distropia.server.communication.KnownHost;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
 import com.sleepycat.bind.tuple.TupleOutput;
+import com.sleepycat.je.DatabaseEntry;
 
 public class KnownHostTupleBinding extends TupleBinding<KnownHost> {
 
@@ -23,20 +24,20 @@ public class KnownHostTupleBinding extends TupleBinding<KnownHost> {
 		
 		try{			
 			KeyFactory kf = KeyFactory.getInstance("RSA");
-			int length = ti.readInt();
+			int length = ti.readUnsignedShort();
 			byte[] data = new byte[length];
 			ti.read(data);
 			PKCS8EncodedKeySpec privateKey = new PKCS8EncodedKeySpec( data);
-			length = ti.readInt();
+			length = ti.readUnsignedShort();
 			data = new byte[length];
 			ti.read(data);
 			X509EncodedKeySpec publicKey = new X509EncodedKeySpec( data);
 			knownHost.setKeyPair( new KeyPair(kf.generatePublic( publicKey), kf.generatePrivate( privateKey)));
 			
-			length = ti.readInt();
-			data = new byte[length];
-			ti.read(data);
-			if (data.length>0){				
+			length = ti.readUnsignedShort();
+			if (length > 0){
+				data = new byte[length];
+				ti.read(data);
 				X509EncodedKeySpec foreignPublicKey = new X509EncodedKeySpec( data);
 				knownHost.setForeignPublicKey( kf.generatePublic( foreignPublicKey));
 			}
@@ -61,16 +62,17 @@ public class KnownHostTupleBinding extends TupleBinding<KnownHost> {
 			to.writeLong( knownHost.getLastAccess());
 			to.writeString( knownHost.getUniqueHostId());
 			byte[] data = knownHost.getKeyPair().getPrivate().getEncoded();
-			to.writeInt( data.length);
+			to.writeUnsignedShort( data.length);
 			to.write( data);
 			data = knownHost.getKeyPair().getPublic().getEncoded();
-			to.writeInt( data.length);
+			to.writeUnsignedShort( data.length);
 			to.write( data);
-			if (knownHost.getForeignPublicKey() != null) data = knownHost.getForeignPublicKey().getEncoded();
-			else data = new byte[0];
-			
-			to.writeInt( data.length);
-			to.write( data);
+			if (knownHost.getForeignPublicKey() != null){
+				data = knownHost.getForeignPublicKey().getEncoded();
+				to.writeUnsignedShort( data.length);
+				to.write( data);
+			}
+			else to.writeUnsignedShort( 0);
 			
 			List<String> addresses = knownHost.getAddresses();
 			to.writeInt( addresses.size());
@@ -80,6 +82,16 @@ public class KnownHostTupleBinding extends TupleBinding<KnownHost> {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public static void main(String[] args) throws NumberFormatException, Exception {
+		KnownHost knownHost = new KnownHost("abc");
+		KnownHostTupleBinding knownHostTupleBinding = new KnownHostTupleBinding();
+		
+		DatabaseEntry databaseEntry = new DatabaseEntry();
+		knownHostTupleBinding.objectToEntry(knownHost, databaseEntry);
+		knownHost = knownHostTupleBinding.entryToObject(databaseEntry);
+		System.out.println("uid:" + knownHost.getUniqueHostId());
 	}
 
 }

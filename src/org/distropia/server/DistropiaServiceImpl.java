@@ -58,7 +58,7 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 			
 				userProfile = (UserProfile) userProfiles.createNewUser();
 				if (userProfile == null) throw new Exception( "Error userProfile is null.");
-				userProfile.setNewUserPassword( createAccountRequest.getPassword());
+				userProfile.initializeUser( createAccountRequest.getPassword());
 				userProfile.setUserName( createAccountRequest.getUserName());
 				userProfiles.add( userProfile);
 				

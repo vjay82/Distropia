@@ -243,7 +243,7 @@ public class Autoconf implements Maintenanceable {
 						{
 							// at first time we probe the device
 							boolean success = false;
-							int externalInternetPort = Backend.getCommunicationDatabase().getProperty("lastUPNPMappedInternetPort", Backend.getConnectionStatus().getExternalInternetPort());
+							int externalInternetPort = Backend.getCommunicationDatabase().getPropertyInt("lastUPNPMappedInternetPort", Backend.getConnectionStatus().getExternalInternetPort());
 							if ((externalInternetPort < 1) || (externalInternetPort > 65535)) externalInternetPort = Backend.getConnectionStatus().getInternetPort();
 							for(int index=0; index<5; index++){
 								// check if address is free or already taken by us
@@ -263,8 +263,8 @@ public class Autoconf implements Maintenanceable {
 							}
 							
 							if (success){
-								Backend.getCommunicationDatabase().setProperty("lastUPNPMappedInternetPort", externalInternetPort);
-								int externalDHTPort = Backend.getCommunicationDatabase().getProperty("lastUPNPMappedDHTPort", Backend.getDHT().getPort());
+								Backend.getCommunicationDatabase().setPropertyInt("lastUPNPMappedInternetPort", externalInternetPort);
+								int externalDHTPort = Backend.getCommunicationDatabase().getPropertyInt("lastUPNPMappedDHTPort", Backend.getDHT().getPort());
 								if ((externalDHTPort < 1) || (externalDHTPort > 65535)) externalDHTPort = Backend.getDHT().getPort(true);
 								if ((externalDHTPort < 1) || (externalDHTPort > 65535)) externalDHTPort = (new Random()).nextInt(64510) + 1025;
 								success = false;
@@ -292,7 +292,7 @@ public class Autoconf implements Maintenanceable {
 								}
 								if (success){
 									logger.info("UPNP was successful, used external port " + externalInternetPort + " for webserver and port " + externalDHTPort + " for DHT.");
-									Backend.getCommunicationDatabase().setProperty("lastUPNPMappedDHTPort", externalDHTPort);
+									Backend.getCommunicationDatabase().setPropertyInt("lastUPNPMappedDHTPort", externalDHTPort);
 									Backend.getConnectionStatus().setExternalInternetPort( externalInternetPort);
 									Backend.getDHT().setExternalPort(externalDHTPort);
 									if (!Utils.isNullOrEmpty( routerExternalAddress)){

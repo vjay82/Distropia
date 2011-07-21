@@ -54,11 +54,11 @@ public class CommunicationDatabase extends Database {
 	
 	public String getUniqueHostId() throws Exception
 	{
-		String result = getProperty( KEY_UNIQUEHOSTID, null);
+		String result = getPropertyString( KEY_UNIQUEHOSTID, null);
 		if ((result == null) || ("".equals( result)))
 		{
 			result = java.util.UUID.randomUUID().toString().replaceAll("-", "");
-			setProperty( KEY_UNIQUEHOSTID, result);
+			setPropertyString( KEY_UNIQUEHOSTID, result);
 		}
 		return result;
 	}	
@@ -86,7 +86,9 @@ public class CommunicationDatabase extends Database {
 		DatabaseEntry theKey = new DatabaseEntry();
 		stringEntryBinding.objectToEntry(uniqueHostId, theKey);
 		DatabaseEntry result = new DatabaseEntry();
-		if (dbKnownHosts.get(null, theKey, result, LockMode.DEFAULT) == OperationStatus.SUCCESS) return knownHostTupleBinding.entryToObject( result);
+		if (dbKnownHosts.get(null, theKey, result, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+			return knownHostTupleBinding.entryToObject( result);
+		}
 		return null;
 	}
 	
@@ -110,6 +112,7 @@ public class CommunicationDatabase extends Database {
 			finally{
 				cursor.close();
 			}
+			txn.commit();
 		}
 		catch (Exception e) {
 			txn.abort();

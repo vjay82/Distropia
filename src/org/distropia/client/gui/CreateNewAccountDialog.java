@@ -1,9 +1,17 @@
 package org.distropia.client.gui;
 
+import org.distropia.client.CreateUserAccountRequest;
+import org.distropia.client.DefaultResponse;
 import org.distropia.client.Distropia;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.widgets.Window;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.PasswordItem;
@@ -80,7 +88,7 @@ public class CreateNewAccountDialog extends Window {
 		password1.setTooltip("Wählen Sie Ihr Passwort mit bedacht, wenn Sie es vergessen, wird Ihr Profil nicht mehr zugänglich sein.");
 		TextItem textItem = new TextItem("firstName", "Vorname");
 		textItem.setRequired(true);
-		TextItem textItem_1 = new TextItem("lastName", "Nachname");
+		TextItem textItem_1 = new TextItem("surName", "Nachname");
 		textItem_1.setRequired(true);
 		TextItem textItem_2 = new TextItem("userName", "Benutzername");
 		textItem_2.setRequired(true);
@@ -91,6 +99,54 @@ public class CreateNewAccountDialog extends Window {
 		password2.setValidators( secondPasswordValidator);
 		
 		BottomButtons bottomButtons = new BottomButtons();
+		bottomButtons.getButtonOk().addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				
+				CreateUserAccountRequest createUserAccountRequest = new CreateUserAccountRequest( Distropia.getSessionId(), 
+						dynamicForm.getValueAsString("userName"),
+						dynamicForm.getValueAsString("password1"),
+						dynamicForm.getValueAsString("firstName"),
+						dynamicForm.getValueAsString("surName")
+						);
+				
+				
+				disable();
+				Distropia.getRpcService().createUserAccount(createUserAccountRequest, new AsyncCallback<DefaultResponse>() {
+					
+					@Override
+					public void onSuccess(DefaultResponse result) {
+						enable();
+						hide();
+						if (Distropia.manageSessionAndErrors( result)){
+							if (Distropia.getCurrentPage() instanceof LoginPage){
+								((LoginPage)Distropia.getCurrentPage()).setUserName( dynamicForm.getValueAsString("userName"));
+								((LoginPage)Distropia.getCurrentPage()).setCorrectFocus();
+							}
+							destroy();
+						}
+						
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						enable();
+						Distropia.manageSessionAndErrors( caught);						
+					}
+				});
+				
+				
+			}
+		});
+		bottomButtons.getButtonCancel().addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {					
+					@Override
+					public void execute() {
+						destroy();						
+					}
+				});
+			}
+		});
 		addItem(bottomButtons);
 		
 		
@@ -101,7 +157,7 @@ public class CreateNewAccountDialog extends Window {
 	    {
 	    	dynamicForm.setValue("userName", "DebugUser");
 	    	dynamicForm.setValue("firstName", "Volker");
-	    	dynamicForm.setValue("lastName", "Gronau");
+	    	dynamicForm.setValue("surName", "Gronau");
 	    	dynamicForm.setValue("password1", "1234");
 	    	dynamicForm.setValue("password2", "1234");
 	    }

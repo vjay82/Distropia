@@ -275,11 +275,11 @@ public class DHT {
 		super();
 		this.storageDirectory = storageDirectory;
 		this.communicationDatabase = communicationDatabase;
-		String key = communicationDatabase.getProperty("dhtKey", null);
+		String key = communicationDatabase.getPropertyString("dhtKey", null);
 		if (key == null)
 		{
 			key = Base64.encode( Number160.createHash( Backend.getUniqueHostId()).toByteArray());
-			communicationDatabase.setProperty("dhtKey", key);
+			communicationDatabase.setPropertyString("dhtKey", key);
 		}
 		peerKey = new Number160( Base64.decode( key));
 		externalPort = Backend.getConfiguration().getExternalDHTPort();

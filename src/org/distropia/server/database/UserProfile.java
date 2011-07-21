@@ -3,86 +3,102 @@ package org.distropia.server.database;
 
 import java.io.File;
 
-import javax.crypto.spec.SecretKeySpec;
+import org.distropia.server.Maintenanceable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.distropia.client.UserCredentials;
-
-public class UserProfile extends BasicUserProfile {
+public class BasicUserProfile implements Maintenanceable{
 	
-	protected UserCredentials credentials = null;
+	static Logger logger = LoggerFactory.getLogger(BasicUserProfile.class);
 	
+	protected File dataDirectory = null;
+	protected String uniqueUserID = null;
+	protected PrivateUserDatabase privateUserDatabase = null;
+	protected PublicUserDatabase publicUserDatabase = null;
+	protected long privateUserDatabaseLastAccess = 0;
+	protected long publicUserDatabaseLastAccess = 0;
 	
-	public UserProfile(File dataDirectory){
-		super(dataDirectory);
-	}
-	
-	private void setUserPasswordForDecryption(String password) throws Exception
-	{
-		if ((password == null) || ("".equals(password))) getPrivateUserDatabase().setUserPasswordForDecryption( null);
-		else {
-			while (password.length() < 16) password = password + password;
-			password = password.substring(0, 16);
-			getPrivateUserDatabase().setUserPasswordForDecryption( new SecretKeySpec( password.getBytes("UTF-8"), "AES"));
-		}
-	}
-	
-	public synchronized boolean login( String userName, String password) throws Exception
-	{
-		logger.info("login user - " + this + " - trying login");
-		HashedPassword hashedPassword = getPrivateUserDatabase().getHashedUserPassword();
-		if (hashedPassword.compare(password))
+	public synchronized void closePrivateUserDatabase(){
+		if (privateUserDatabase != null)
 		{
-			logger.info("login user - " + this + " - initializing password");
-			this.setUserPasswordForDecryption(password); // from now on encrypted access takes place
-			
-			if (userName.equalsIgnoreCase( getPrivateUserDatabase().getUsername()))
-			{
-				logger.info("login user - " + this + " - loading uid");
-				uniqueUserID = getPrivateUserDatabase().getUniqueUserID();
-				return true;
-			}
+			privateUserDatabase.close();
+			privateUserDatabase = null;
 		}
-			
-		logger.info("login user - " + this + " - wrong password");
-		return false;
 	}
 	
-	public synchronized void setNewUserPassword( String password) throws Exception
-	{
-		logger.info("creating User - initializing userPassword");
-		setUserPasswordForDecryption(password); // from now on encrypted access takes place
+	public synchronized void closePublicUserDatabase(){
+		if (publicUserDatabase != null)
+		{
+			publicUserDatabase.close();
+			publicUserDatabase = null;
+		}
+	}
+	
+	public void close()
+	{		
+		closePrivateUserDatabase();
+		closePublicUserDatabase();
+	}
+	
+	protected File getPrivateDatabasePath() {
+		return new File( dataDirectory.getAbsolutePath() + File.pathSeparator + "privateDatabase.db");
+	}
+	
+	protected File getPublicDatabasePath() {
+		return new File( dataDirectory.getAbsolutePath() + File.pathSeparator + "publicDatabase.db");
+	}
+	
+	public BasicUserProfile( File dataDirectory) {
+		super();
 		
-		logger.info("creating User - creating hashed user password");
-		HashedPassword hashedUserPassword = new HashedPassword();
-		hashedUserPassword.createNew( password);
-		getPrivateUserDatabase().setHashedUserPassword( hashedUserPassword);
-	}
-
-	public UserCredentials getCredentials() {
-		if (credentials == null){
-			try {
-				credentials = getPrivateUserDatabase().getCredentials();
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error("error getting user credentials", e);
-			}
-		}
-		return credentials;
-	}
-
-	public void setCredentials(UserCredentials credentials) {
-		this.credentials = credentials;
-		try {
-			getPrivateUserDatabase().setCredentials( credentials);
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error("error setting user credentials", e);
-		}
-	}
-
-	public void setUserName(String userName) throws Exception {
-		getPrivateUserDatabase().setUsername(userName);
+		this.dataDirectory = dataDirectory;
 	}
 	
+	
+	public synchronized PrivateUserDatabase getPrivateUserDatabase() throws Exception
+	{
+		privateUserDatabaseLastAccess = System.currentTimeMillis();
+		if (privateUserDatabase == null)
+		{
+			privateUserDatabase = new PrivateUserDatabase( getPrivateDatabasePath());
+		}
+		return privateUserDatabase;		
+	}
+	
+	
+	public synchronized PublicUserDatabase getPublicUserDatabase() throws Exception
+	{
+		publicUserDatabaseLastAccess = System.currentTimeMillis();
+		if (publicUserDatabase == null)
+		{
+			publicUserDatabase = new PublicUserDatabase( getPublicDatabasePath());		
+		}
+		return publicUserDatabase;		
+	}
+
+	public File getDataDirectory() {
+		return dataDirectory;
+	}
+
+	public void setDataDirectory(File dataDirectory) {
+		this.dataDirectory = dataDirectory;
+	}
+
+	@Override
+	public String toString() {
+		
+		return super.toString();
+	}
+
+	public String getUniqueUserID() {
+		return uniqueUserID;
+	}
+
+	@Override
+	public synchronized void maintenance() {
+		long xMillisAgo = System.currentTimeMillis() - 60000;
+		if (privateUserDatabaseLastAccess < xMillisAgo) closePrivateUserDatabase();
+		if (publicUserDatabaseLastAccess < xMillisAgo) closePublicUserDatabase();
+	}
 	
 }
