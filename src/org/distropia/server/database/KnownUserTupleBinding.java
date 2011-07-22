@@ -18,13 +18,12 @@ public class KnownUserTupleBinding extends TupleBinding<KnownUser> {
 			
 			// public key
 			int length = ti.readUnsignedShort();
-			
 			if (length > 0){
 				byte[] data = new byte[length];
 				ti.read(data);
 				knownUser.setPublicKey( (PublicKey) new X509EncodedKeySpec( data));
 			}
-			knownUser.setPublicKey( null);
+			else knownUser.setPublicKey( null);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

@@ -237,7 +237,10 @@ public class Autoconf implements Maintenanceable {
 								Backend.getMaintenanceList().remove( this);
 								logger.error("error refreshing UPNP mapping");
 							}
-							else logger.info("refreshed UPNP mapping");
+							else {
+								logger.info("refreshed UPNP mapping");
+								return true;
+							}
 						}
 						else
 						{

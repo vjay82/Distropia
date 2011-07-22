@@ -1,6 +1,11 @@
 package org.distropia.server;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.distropia.client.BootstrapRequest;
 import org.distropia.client.CreateUserAccountRequest;
@@ -16,6 +21,7 @@ import org.distropia.client.Utils;
 import org.distropia.server.communication.KnownHost;
 import org.distropia.server.communication.KnownHosts;
 import org.distropia.server.communication.PingResponse;
+import org.distropia.server.database.UserCredentials;
 import org.distropia.server.database.UserProfile;
 import org.distropia.server.database.UserProfiles;
 import org.slf4j.Logger;
@@ -53,6 +59,8 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 		synchronized (userProfiles) {
 			UserProfile userProfile;
 			try{
+				logger.info("creating user " + createAccountRequest.getFirstName() + " " + createAccountRequest.getSurName());
+				
 				userProfile = userProfiles.login( createAccountRequest.getUserName(), createAccountRequest.getPassword());
 				if (userProfile != null) return new DefaultResponse( session.getSessionId(), false, "User " + createAccountRequest.getUserName() + " already exists.");				
 			
@@ -60,7 +68,15 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 				if (userProfile == null) throw new Exception( "Error userProfile is null.");
 				userProfile.initializeUser( createAccountRequest.getPassword());
 				userProfile.setUserName( createAccountRequest.getUserName());
+				
+				UserCredentials userCredentials = new UserCredentials();
+				userCredentials.setSurName( createAccountRequest.getSurName());
+				userCredentials.setFirstName( createAccountRequest.getFirstName());
+				userProfile.setUserCredentials(userCredentials);
 				userProfiles.add( userProfile);
+				
+				// immediate push
+				Backend.getConnectionStatus().setNextUserPushToImmediate();
 				
 				return new DefaultResponse( session.getSessionId(),true, null);
 			}
@@ -198,4 +214,15 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 		
 		return new DefaultUserResponse( session.getSessionId(), true, null, null, false);
 	}
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		
+		
+		System.out.println( req.getQueryString() + " sessionID: " + req.getParameter("sessionId"));
+		super.doGet(req, resp);
+	}
+	
+	
 }

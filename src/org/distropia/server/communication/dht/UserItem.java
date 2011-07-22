@@ -3,7 +3,7 @@ package org.distropia.server.communication.dht;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.distropia.client.UserCredentials;
+import org.distropia.server.database.PublicUserCredentials;
 
 public class UserItem implements Serializable{
 	
@@ -11,7 +11,7 @@ public class UserItem implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 5328544778974325565L;
-	private UserCredentials credentials;
+	private PublicUserCredentials credentials;
     private ArrayList<String> storedAtMachine;
     
     private boolean compareWithNull(Object a, Object b){
@@ -25,11 +25,11 @@ public class UserItem implements Serializable{
 		return ( compareWithNull( credentials, ((UserItem)obj).credentials));
 	}
 
-	public UserCredentials getCredentials() {
+	public PublicUserCredentials getCredentials() {
 		return credentials;
 	}
 
-	public void setCredentials(UserCredentials credentials) {
+	public void setCredentials(PublicUserCredentials credentials) {
 		this.credentials = credentials;
 	}
 
@@ -45,7 +45,7 @@ public class UserItem implements Serializable{
 		super();
 	}
 
-	public UserItem(UserCredentials credentials,
+	public UserItem(PublicUserCredentials credentials,
 			ArrayList<String> storedAtMachine) {
 		super();
 		this.credentials = credentials;

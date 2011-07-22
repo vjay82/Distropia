@@ -28,11 +28,11 @@ public class CreateUserAccountRequest extends DefaultRequest {
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
-	public String getLastName() {
+	public String getSurName() {
 		return surName;
 	}
-	public void setLastName(String lastName) {
-		this.surName = lastName;
+	public void setSurName(String surName) {
+		this.surName = surName;
 	}
 	
 	public CreateUserAccountRequest(String sessionId, String userName,

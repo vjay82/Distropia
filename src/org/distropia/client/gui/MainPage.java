@@ -8,7 +8,7 @@ public class MainPage extends Page {
 	
 	public MainPage() {
 		super();
-		//setWidget(1, 0, new MainPage_LeftPart());
+		this.addMember( new UserPictureAndName());
 	}
 
 }

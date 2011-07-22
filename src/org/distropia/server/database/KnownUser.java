@@ -3,10 +3,9 @@ package org.distropia.server.database;
 import java.security.PublicKey;
 
 public class KnownUser {
-	protected byte[] databaseKey;
-	protected String uniqueUserID;
-	protected PublicKey publicKey;
-	
+	protected byte[] databaseKey = null;
+	protected String uniqueUserID = null;
+	protected PublicKey publicKey = null;
 	
 	public byte[] getDatabaseKey() {
 		return databaseKey;
@@ -28,7 +27,5 @@ public class KnownUser {
 	}	
 	public KnownUser() {
 		super();
-	}
-	
-	
+	}	
 }

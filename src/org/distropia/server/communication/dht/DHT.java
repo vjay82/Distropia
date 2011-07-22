@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.tomp2p.connection.Bindings;
@@ -33,9 +34,14 @@ import org.distropia.server.communication.GiveMeYourDHTPortResponse;
 import org.distropia.server.communication.KnownHost;
 import org.distropia.server.communication.KnownHosts;
 import org.distropia.server.database.CommunicationDatabase;
+import org.distropia.server.database.PublicUserCredentials;
+import org.distropia.server.database.UserProfile;
+import org.distropia.server.database.UserProfiles;
 import org.distropia.server.platformspecific.PlatformWindows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gwt.dev.util.collect.HashMap;
 
 
 public class DHT {
@@ -445,6 +451,58 @@ public class DHT {
 
 	public void setExternalPort(int externalPort) {
 		this.externalPort = externalPort;
+	}
+
+	public void pushUsers() {
+		if ((peer == null) || (!peer.isListening())) return;
+		logger.info("publishing users");
+		
+		UserProfiles userProfiles = Backend.getInstance().getUserProfiles();
+		if (userProfiles == null) return; 
+		List<PublicUserCredentials> publicUserCredentials = new ArrayList<PublicUserCredentials>();
+		synchronized (userProfiles) {
+			for(UserProfile userProfile: userProfiles){
+				try
+				{
+					PublicUserCredentials puc = userProfile.getPublicUserCredentials();
+					if ( puc != null) publicUserCredentials.add( puc);
+				}
+				catch (Exception e) {
+					logger.error("unable to get public user credentials for an user", e);
+				}
+			}
+		}
+		
+		// here we have a list of everything we have to publish
+		
+		
+		for(PublicUserCredentials puc: publicUserCredentials){
+			try{
+				Data data = new Data( puc);
+			
+				// first push runs with uniqueID
+				logger.info("publishing user uniqueUserID: " + puc.getUniqueUserId());
+				Number160 pushingAtKey = Number160.createHash( puc.getUniqueUserId());
+				ConfigurationStore cs = Configurations.defaultStoreConfiguration();
+				cs.setProtectDomain(false);
+				cs.setDomain( DOMAIN_USER);
+				cs.setContentKey( pushingAtKey);
+				peer.put( pushingAtKey, data, cs);
+				
+				if (puc.getFirstName() != null && (puc.getSurName() != null)){ // pushing with name
+					logger.info("publishing user fn: " + puc.getFirstName() + " sn: " + puc.getSurName());
+					pushingAtKey = Number160.createHash( puc.getFirstName() + " " + puc.getSurName());
+					cs = Configurations.defaultStoreConfiguration();
+					cs.setProtectDomain(false);
+					cs.setDomain( DOMAIN_USER);
+					cs.setContentKey( pushingAtKey);
+					peer.put( pushingAtKey, data, cs);
+				}
+			}
+			catch (Exception e) {
+				logger.error("error pushing an user", e);
+			}
+		}		
 	}
 	
 	

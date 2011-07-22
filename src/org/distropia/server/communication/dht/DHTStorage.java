@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public class DHTStorage extends StorageDisk {
 	protected static final Logger logger = LoggerFactory.getLogger(DHTStorage.class);
-	protected static final int MAXIMUM_USER_SAVE_TIME = 3600*48; // 2 days
+	protected static final int MAXIMUM_USER_SAVE_TIME = 3600*24; // 1 day
 	protected static final int MAXIMUM_HOST_ADDRESS_SAVE_TIME = 600 * 2; // 20 minutes
 
 	public DHTStorage(String homeDirectory) throws Exception {
@@ -24,6 +24,7 @@ public class DHTStorage extends StorageDisk {
 	@Override
 	public Data get(Number480 key) {
 		if (DHT.DOMAIN_USER.equals( key.getDomainKey())) {
+			logger.info("getting User: " + key.toString());
 			Data data = super.get(key);
 			if (data== null) return null;
 			try {
@@ -41,7 +42,6 @@ public class DHTStorage extends StorageDisk {
 			
 		}
 		else if (DHT.DOMAIN_HOST_ADDRESS.equals( key.getDomainKey())) {
-			logger.info("getting Domain: " + key.toString());
 			Data data = super.get(key);
 			if (data== null) return null;
 			try {
@@ -112,7 +112,6 @@ public class DHTStorage extends StorageDisk {
 			return false;
 		}
 		else if (DHT.DOMAIN_HOST_ADDRESS.equals( key.getDomainKey())){
-			logger.info("storing Domain: "+ key.toString());
 			try{
 				Object o = newData.getObject();
 				if (o instanceof ArrayList){

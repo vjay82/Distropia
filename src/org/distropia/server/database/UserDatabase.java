@@ -23,7 +23,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.distropia.server.communication.KnownHost;
 
 import com.sleepycat.bind.tuple.TupleInput;
 import com.sleepycat.bind.tuple.TupleOutput;
@@ -36,8 +35,10 @@ import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
 public class UserDatabase extends DistropiaDatabase {
-	public static final String KEY_UID = "uniqueUserID";
+	public static final String KEY_UNIQUEUSERID = "uniqueUserID";
+	public static final String KEY_ISSEARCHABLEBYNAME = "searchableByName";
 	public static final String KEY_USERNAME = "userName";
+	public static final String KEY_USERCREDENTIALS = "userCredentials";
 	public static final String KEY_USERPUBLICKEY = "userPublicKey";	
 	public static final String KEY_USERPRIVATEKEY = "userPrivateKey";
 	public static final String KEY_HASHEDUSERPASSWORD = "hashedUserPassword";
@@ -45,6 +46,8 @@ public class UserDatabase extends DistropiaDatabase {
 	
 	static final protected KnownUserTupleBinding knownUserEntryBinding = new KnownUserTupleBinding();
 	static final protected UserGroupTupleBinding userGroupEntryBinding = new UserGroupTupleBinding();
+	static final protected UserCredentialsTupleBinding userCredentialsEntryBinding = new UserCredentialsTupleBinding();
+	static final protected PublicUserCredentialsTupleBinding publicUserCredentialsEntryBinding = new PublicUserCredentialsTupleBinding();
 	
 	protected Key encryptionKey = null;
 	protected com.sleepycat.je.Database dbSignatures = null;
@@ -52,6 +55,7 @@ public class UserDatabase extends DistropiaDatabase {
 	protected com.sleepycat.je.Database dbLastUpdates = null;
 	protected com.sleepycat.je.Database dbUserGroups = null;
 	protected com.sleepycat.je.Database dbMultiUserKeys = null;
+	protected com.sleepycat.je.Database dbPublicProperties = null;
 	
 	@Override
 	protected synchronized void open() throws Exception {
@@ -65,6 +69,7 @@ public class UserDatabase extends DistropiaDatabase {
 	        dbKnownUsers = environment.openDatabase(null, "knownUsers", dbConfig);
 	        dbUserGroups = environment.openDatabase(null, "knownUsers", dbConfig);
 	        dbMultiUserKeys = environment.openDatabase(null, "multiUserKeys", dbConfig);
+	        dbPublicProperties = environment.openDatabase(null, "publicProperties", dbConfig);
 		}
 	}
 
@@ -78,12 +83,14 @@ public class UserDatabase extends DistropiaDatabase {
 				getDatabaseSignature( dbUserGroups);
 				getDatabaseSignature( dbLastUpdates);
 				getDatabaseSignature( dbMultiUserKeys);
+				getDatabaseSignature( dbPublicProperties);
 				
+				dbPublicProperties.close();
 				dbMultiUserKeys.close();
 				dbUserGroups.close();
-				dbKnownUsers.close();
-				dbSignatures.close();
+				dbKnownUsers.close();				
 				dbLastUpdates.close();
+				dbSignatures.close();
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -229,6 +236,40 @@ public class UserDatabase extends DistropiaDatabase {
 		}		
 	}
 	
+	public List<SecretKey> decryptAllMultiUserKeysIAmAbleTo( PrivateKey key, String myUniqueUserID, byte[] ourSalt) throws Exception{
+		open();
+		List<SecretKey> result = new ArrayList<SecretKey>();
+		Transaction txn = environment.beginTransaction(null, null);
+		try{
+			DatabaseEntry foundKey = new DatabaseEntry();
+		    DatabaseEntry foundData = new DatabaseEntry();
+			Cursor cursor = dbMultiUserKeys.openCursor(null, null);		
+			try{		
+				while (cursor.getPrev(foundKey, foundData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+			    	try{
+			    		foundKey.setData( decrypt(foundKey.getData(), key));
+			    		if (myUniqueUserID.equals( stringEntryBinding.entryToObject( foundKey))){
+			    			foundData.setData( decrypt(foundData.getData(), key));
+			    			result.add( new SecretKeySpec( foundData.getData(), "AES"));			    			
+			    		}
+			    	}
+			    	catch (Exception e) {
+						// dontcare
+					}
+			    }
+			}
+			finally{
+				cursor.close();
+			}
+			txn.commit();
+		}
+		catch (Exception e) {
+			txn.abort();
+			logger.error( "error cleaning known hosts", e);
+		}
+		return result;
+	}
+	
 	public void setMultiUserKeyFor( List<KnownUser> knownUsers, SecretKey secretKey) throws Exception{
 		open();
 		Transaction txn = environment.beginTransaction(null, null);
@@ -287,10 +328,14 @@ public class UserDatabase extends DistropiaDatabase {
 	}
 	
 	public PublicKey getUserPublicKey() throws Exception{
-		byte[] bPublicKey = getPropertyByteArray(KEY_USERPUBLICKEY, null);
-		if ((bPublicKey != null) && (bPublicKey.length > 0)){
+		open();
+		DatabaseEntry key = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(KEY_USERPUBLICKEY, key);
+		
+		DatabaseEntry result = new DatabaseEntry();
+		if (dbPublicProperties.get(null, key, result, LockMode.DEFAULT) == OperationStatus.SUCCESS){
 			KeyFactory kf = KeyFactory.getInstance("RSA");			
-			return kf.generatePublic( new X509EncodedKeySpec( bPublicKey));
+			return kf.generatePublic( new X509EncodedKeySpec( result.getData()));			
 		}
 		return null;
 	}
@@ -312,10 +357,37 @@ public class UserDatabase extends DistropiaDatabase {
 	}
 	
 	public void setUserPublicKey( PublicKey publicKey) throws Exception{
-		if (publicKey == null) deleteProperty(KEY_USERPUBLICKEY);
-		else setPropertyByteArray(KEY_USERPUBLICKEY, publicKey.getEncoded());
+		open();
+		DatabaseEntry key = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(KEY_USERPUBLICKEY, key);
+		if (publicKey == null) dbPublicProperties.delete( null, key);
+		else{
+			dbPublicProperties.put( null, key, new DatabaseEntry(publicKey.getEncoded()));
+		}
+		resetDatabaseSignature(null, dbPublicProperties);
 	}
-
+	
+	public String getUniqueUserID() throws Exception{
+		open();
+		DatabaseEntry key = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(KEY_UNIQUEUSERID, key);
+		
+		DatabaseEntry result = new DatabaseEntry();
+		if (dbPublicProperties.get(null, key, result, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+			return stringEntryBinding.entryToObject( result);			
+		}
+		return null;
+	}
+	
+	public void setUniqueUserID( String uniqueUserID) throws Exception{
+		open();
+		DatabaseEntry key = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(KEY_UNIQUEUSERID, key);
+		DatabaseEntry entry = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(uniqueUserID, entry);
+		dbPublicProperties.put( null, key, entry);
+		resetDatabaseSignature(null, dbPublicProperties);
+	}
 
 	public String getUserName() throws Exception{
 		DatabaseEntry entry = getProperty( KEY_USERNAME);
@@ -331,9 +403,46 @@ public class UserDatabase extends DistropiaDatabase {
 		setProperty(KEY_USERNAME, entry);
 	}
 	
-	public void setEncryptionKey(String password) throws Exception {
-		System.out.println("setting password:"+password);
+	public UserCredentials getUserCredentials() throws Exception{
+		DatabaseEntry entry = getProperty( KEY_USERCREDENTIALS);
+		if (entry == null) return null;
+		decrypt(entry, encryptionKey);
+		return userCredentialsEntryBinding.entryToObject( entry);
+	}
+	
+	public void setUserCredentials( UserCredentials userCredentials) throws Exception{
+		DatabaseEntry key = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(KEY_USERCREDENTIALS, key);
+		DatabaseEntry entry = new DatabaseEntry();
+		userCredentialsEntryBinding.objectToEntry( userCredentials, entry);
+		encrypt( entry, encryptionKey);
+		setProperty(key, entry);
+		System.out.println("cred pub: " + userCredentials.isNamePublicVisible());
+		// now modify public table
 		
+		publicUserCredentialsEntryBinding.objectToEntry( userCredentials.toPublicUserCredentials(), entry);
+		
+		System.out.println("pubn: " + userCredentials.getFirstName() + " " +userCredentials.getSurName());
+		
+		dbPublicProperties.put(null, key, entry);
+		resetDatabaseSignature(null, dbPublicProperties);
+	}
+	
+	public PublicUserCredentials getPublicUserCredentials() throws Exception{
+		open();
+		DatabaseEntry key = new DatabaseEntry();
+		stringEntryBinding.objectToEntry(KEY_USERCREDENTIALS, key);
+		DatabaseEntry result = new DatabaseEntry();
+		if (dbPublicProperties.get(null, key, result, LockMode.DEFAULT) == OperationStatus.SUCCESS){
+			PublicUserCredentials publicUserCredentials = publicUserCredentialsEntryBinding.entryToObject( result);
+			publicUserCredentials.setPublicKey( getUserPublicKey().getEncoded());
+			publicUserCredentials.setUniqueUserId( getUniqueUserID());
+			return publicUserCredentials;
+		}
+		return null;
+	}
+	
+	public void setEncryptionKey(String password) throws Exception {
 		if (password == null) encryptionKey = null;
 		else {
 			SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
@@ -396,6 +505,7 @@ public class UserDatabase extends DistropiaDatabase {
 		kgen.init(256);
 		Key myKey = kgen.generateKey();
 		cipher.init(Cipher.WRAP_MODE, key);
+		
 		byte[] encodedKey = cipher.wrap( myKey);
 		
 		TupleOutput to = new TupleOutput();
@@ -448,28 +558,5 @@ public class UserDatabase extends DistropiaDatabase {
 		if (!Arrays.equals( digest.digest( result), hash)) throw new Exception("Encryption exception");
 	    
 		return result;
-	}
-	
-	public static void main(String[] args) throws NumberFormatException, Exception {
-		KeyGenerator kgen = KeyGenerator.getInstance("AES");
-		kgen.init(256);
-		Key key = kgen.generateKey();
-		
-		UserDatabase userDatabase = new UserDatabase(new File("/tmp/"));
-		/*
-		byte[] enc = userDatabase.encrypt("hallo123".getBytes(), key);
-		
-		System.out.println( enc.length+ " " + new String(userDatabase.decrypt(enc, key)));*/
-		
-	}
-	
-	public String getUniqueUserID() throws Exception
-	{
-		return getPropertyString(KEY_UID, null);
-	}
-	
-	public void setUniqueUserID( String uniqueUserID) throws Exception
-	{
-		setPropertyString(KEY_UID, uniqueUserID);
 	}
 }

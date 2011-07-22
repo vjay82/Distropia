@@ -60,10 +60,10 @@ public class UserProfiles extends ArrayList<UserProfile>{
 			File dataDirectory = new File( userProfileDirectory.getAbsolutePath() + File.separator + uniqueUserID);
 			if (!dataDirectory.exists() && dataDirectory.mkdirs())
 			{
-				UserProfile basicUser = loadUserProfile( dataDirectory);
+				UserProfile userProfile = loadUserProfile( dataDirectory);
 				try {
-					basicUser.setUniqueUserID(uniqueUserID);
-					return basicUser;
+					userProfile.setUniqueUserID(uniqueUserID);
+					return userProfile;
 				} catch (Exception e) {
 					e.printStackTrace();
 					logger.error("error creating user", e);

@@ -45,6 +45,7 @@ public class ConnectionStatus {
 	protected ArrayList<String> reachableAt = new ArrayList<String>();
 	protected long nextDHTPublish = 0;
 	protected long nextCheckMyInternetIp = 0;
+	protected volatile long nextUserPush = 0;
 	protected long nextRemoveOneItemFromCheckedAddressesToBeOurs = 0;
 	protected volatile int externalInternetPort = -1;
 	protected volatile int externalInternetPortFromConfig = -1;
@@ -184,6 +185,10 @@ public class ConnectionStatus {
 			removeAddressFromHostIfOnline.add( new RemoveAddressFromHostIfOnlineItem(address, knownHost));
 			reduceTimeToNextConnectionCheck();
 		}
+	}
+	
+	public void setNextUserPushToImmediate(){
+		nextUserPush = 0;
 	}
 	
 	public synchronized void setNextConnectionCheckToImmediateIfNotOnlineAndReachable()
@@ -413,6 +418,7 @@ public class ConnectionStatus {
 					}
 					
 					if (isReachable() && (!testAddressIfIsMe( KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort())))){
+						logger.error("Test if me failed! Checked against " + KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort()));
 						internetAddress = null;						
 					}
 					
@@ -421,20 +427,19 @@ public class ConnectionStatus {
 							logger.info("trying upnp");
 							if (Backend.getAutoconf().mapPortsWithUPNP()){
 								logger.info("upnp was successful");
-								// not needed anymore
-								/*, testing now: "+KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort()));
 								if (!testAddressIfIsMe(KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort()))){
+									logger.error("UPNP was successful, but test if me failed! Maybe a local firewall prevents connections! I checked against " + KnownHost.buildAddress( internetProtocol, internetAddress, getInternetPort()));
 									internetAddress = null;
 									Backend.getAutoconf().unmapUPNPPorts();
-									System.out.println("failed2");
-								}
-								else System.out.println("success2");*/ 
+									upnpAllowed = false; // deactivating it									
+								} 
 							}
 							else logger.info("upnp failed");
 						}
 					}
 					
 				//	if (!onlyEstimatedOnline) Backend.getDHT().manageDHT();
+					
 				}
 				
 				
@@ -451,6 +456,10 @@ public class ConnectionStatus {
 					onConnectionStatusChanged();
 				}
 				
+				if (isConnectedToInternet() && nextUserPush < System.currentTimeMillis() && Backend.getDHT().isActive()){
+					nextUserPush = System.currentTimeMillis() + (60 * 1000 * 10);
+					Backend.getDHT().pushUsers();
+				}
 				
 				lastConnectedToInternet = connectedToInternet;
 				lastInternetAddress = internetAddress;
