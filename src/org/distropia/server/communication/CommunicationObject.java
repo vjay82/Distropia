@@ -1,4 +1,4 @@
-package org.distropia.server.database;
+package org.distropia.server.communication;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,28 +17,28 @@ import net.tomp2p.utils.Utils;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.distropia.server.Backend;
 
-public class EncryptableObject implements Serializable{
+public class CommunicationObject implements Serializable{
 
 	
 	private static final long serialVersionUID = -4361694718548726839L;
 	protected int protocolVersion = Backend.PROTOCOL_VERSION;
 	
-	public EncryptableObject() {
+	public CommunicationObject() {
 		super();
 	}
 	
-	public static EncryptableObject createFrom( boolean encrypted, byte[] data, Key key) throws Exception{
+	public static CommunicationObject createFrom( boolean encrypted, byte[] data, Key key) throws Exception{
 		if (encrypted)
 		{
-			return EncryptableObject.createFromEncryptedByteArray(key, data);
+			return CommunicationObject.createFromEncryptedByteArray(key, data);
 		}
 		else
 		{
-			return EncryptableObject.createFromByteArray( data);
+			return CommunicationObject.createFromByteArray( data);
 		}
 	}
 	
-	public static EncryptableObject createFrom( boolean encrypted, String data, Key key) throws Exception{
+	public static CommunicationObject createFrom( boolean encrypted, String data, Key key) throws Exception{
 		return createFrom(encrypted, Base64.decode( data), key);
 	}
 	
@@ -47,7 +47,7 @@ public class EncryptableObject implements Serializable{
 		else return Base64.encode( toByteArray());
 	}
 	
-	public static EncryptableObject createFromEncryptedByteArray (Key decryptKey, byte[] createFrom) throws Exception{
+	public static CommunicationObject createFromEncryptedByteArray (Key decryptKey, byte[] createFrom) throws Exception{
 		ByteArrayInputStream bin = new ByteArrayInputStream( createFrom);
 		byte[] encodedAESKey = new byte[256];
 		bin.read(encodedAESKey);
@@ -62,8 +62,8 @@ public class EncryptableObject implements Serializable{
 	    return createFromByteArray( decrypt( encodedObject, aesKey));
 	}
 	
-	public static EncryptableObject createFromByteArray( byte[] createFrom) throws Exception{
-		return (EncryptableObject) Utils.decodeJavaObject(createFrom, 0, createFrom.length);
+	public static CommunicationObject createFromByteArray( byte[] createFrom) throws Exception{
+		return (CommunicationObject) Utils.decodeJavaObject(createFrom, 0, createFrom.length);
 	}
 	
 	public byte[] toByteArray() throws IOException
@@ -88,20 +88,6 @@ public class EncryptableObject implements Serializable{
 	    byte[] result = bos.toByteArray();
 	    
 	    return result;
-	}
-	
-	//byte test ;
-	public static void main(String[] args) throws Exception{
-		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-		keyPairGenerator.initialize( 2048);
-	    KeyPair keyPair = keyPairGenerator.genKeyPair();
-		
-		EncryptableObject simpleServerCommand = new EncryptableObject();
-		//simpleServerCommand.test = 15;
-		byte[] enc = simpleServerCommand.encrypt( keyPair.getPublic());
-		//SimpleServerCommand simpleServerCommand2 = 
-				EncryptableObject.createFromEncryptedByteArray(keyPair.getPrivate(), enc);
-		//System.out.println( simpleServerCommand2.test);
 	}
 	
 	protected byte[] encrypt(byte[] in, Key key) throws Exception

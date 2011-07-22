@@ -18,13 +18,14 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
+import com.sleepycat.je.Transaction;
 
-public class Database implements Maintenanceable{
+public class DistropiaDatabase implements Maintenanceable{
 	protected static final int TIMER_INTERVAL_MAINTENANCE = 60000; // every minute
 	protected static final int AUTOCLOSE_AFTER = 60000; // automatically closes every unused db after one minute
 	
 	static final protected EntryBinding<String> stringEntryBinding = TupleBinding.getPrimitiveBinding(String.class);
-	protected static Logger logger = LoggerFactory.getLogger(Database.class);
+	protected static Logger logger = LoggerFactory.getLogger(DistropiaDatabase.class);
 	protected File databasePath = null;
 	protected Environment environment = null;
 	protected long lastAccess = 0;
@@ -61,13 +62,19 @@ public class Database implements Maintenanceable{
 	public synchronized void close(){
 		if (environment != null){
 			dbProperties.close();
-			environment.close();
+			dbProperties = null;
+			try{
+				environment.close();
+			}catch (Exception e) {
+				e.printStackTrace();
+				logger.error("error closing database", e);
+			}
 			environment = null;
 			Backend.getMaintenanceList().remove( this);
 		}
 	}
 	
-	public Database(File databasePath) throws Exception {
+	public DistropiaDatabase(File databasePath) throws Exception {
 		super();
 		this.databasePath = databasePath;
 		if ((!databasePath.exists()) && (!databasePath.mkdirs())) throw new Exception("Could not create path " + databasePath.getAbsolutePath());
@@ -166,6 +173,14 @@ public class Database implements Maintenanceable{
 			dbProperties.delete(null, key);
 		}
 		else dbProperties.put(null, key, value);
+	}
+	
+	public void setProperty( Transaction txn, DatabaseEntry key, DatabaseEntry value) throws Exception{
+		open();
+		if (value == null) {
+			dbProperties.delete(txn, key);
+		}
+		else dbProperties.put(txn, key, value);
 	}
 	
 	public void deleteProperty( String key) throws Exception{
