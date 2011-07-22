@@ -1,53 +1,31 @@
 package org.distropia.server.database;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.crypto.SecretKey;
+
 public class UserGroup {
-	String userUID;
-	byte[] sharedSecret;
-	boolean internalGroup;
-	String groupName;
-	long updateTime;
-	public String getUserUID() {
-		return userUID;
+	String uniqueGroupID;
+	List<String> members = new ArrayList<String>();
+	SecretKey secretKey;
+	public String getUniqueGroupID() {
+		return uniqueGroupID;
 	}
-	public void setUserUID(String nodeUID) {
-		this.userUID = nodeUID;
+	public void setUniqueGroupID(String uniqueGroupID) {
+		this.uniqueGroupID = uniqueGroupID;
 	}
-	public byte[] getSharedSecret() {
-		return sharedSecret;
+	public List<String> getMembers() {
+		return members;
 	}
-	public void setSharedSecret(byte[] sharedSecret) {
-		this.sharedSecret = sharedSecret;
+	public void setMembers(List<String> members) {
+		this.members = members;
 	}
-	public boolean isInternalGroup() {
-		return internalGroup;
+	public SecretKey getSecretKey() {
+		return secretKey;
 	}
-	public void setInternalGroup(boolean internalGroup) {
-		this.internalGroup = internalGroup;
+	public void setSecretKey(SecretKey secretKey) {
+		this.secretKey = secretKey;
 	}
-	public String getGroupName() {
-		return groupName;
-	}
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
-	}
-	public long getUpdateTime() {
-		return updateTime;
-	}
-	public void setUpdateTime(long updateTime) {
-		this.updateTime = updateTime;
-	}
-	public UserGroup(String userUID, byte[] sharedSecret,
-			boolean internalGroup, String groupName, long updateTime) {
-		super();
-		this.userUID = userUID;
-		this.sharedSecret = sharedSecret;
-		this.internalGroup = internalGroup;
-		this.groupName = groupName;
-		this.updateTime = updateTime;
-	}
-	public UserGroup() {
-		super();
-	}
-	
 	
 }

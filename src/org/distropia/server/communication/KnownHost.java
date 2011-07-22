@@ -29,7 +29,6 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.apache.http.util.EntityUtils;
 import org.distropia.client.Utils;
 import org.distropia.server.Backend;
-import org.distropia.server.database.EncryptableObject;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -326,7 +325,7 @@ public class KnownHost{
 	}
 	
 	public DefaultServerResponse processEvent( boolean encrypted, byte[] data) throws Exception{
-		DefaultServerRequest defaultServerRequest = (DefaultServerRequest)EncryptableObject.createFrom(encrypted, data, getKeyPair().getPrivate());
+		DefaultServerRequest defaultServerRequest = (DefaultServerRequest)CommunicationObject.createFrom(encrypted, data, getKeyPair().getPrivate());
 		Backend.getConnectionStatus().addAddressThatCouldBeOurs( defaultServerRequest.getYourAddress());
 		return processEvent( defaultServerRequest);
 	}
@@ -687,7 +686,7 @@ public class KnownHost{
 			if (wrappedServerCommandResponse == null) throw new Exception("No answer.");
 
 			notifyKnownHostsOfChange( false);
-			return (DefaultServerResponse) EncryptableObject.createFrom( wrappedServerCommandResponse.getEncrypted(), wrappedServerCommandResponse.getData(), getKeyPair().getPrivate());			
+			return (DefaultServerResponse) CommunicationObject.createFrom( wrappedServerCommandResponse.getEncrypted(), wrappedServerCommandResponse.getData(), getKeyPair().getPrivate());			
 		}
 		else logger.info("sending command - normal mode");
 		
@@ -708,7 +707,7 @@ public class KnownHost{
 		for(String address: myAddresses)
 		{
 			try {
-				EncryptableObject result = sendCommandToAddress( address, request);
+				CommunicationObject result = sendCommandToAddress( address, request);
 
 				notifyKnownHostsOfChange( false);
 				lastValidAddress = address;
@@ -778,7 +777,7 @@ public class KnownHost{
 				{
 					WrappedServerCommandResponse wrappedServerCommandResponse = (WrappedServerCommandResponse) proxyHost.sendCommand(wrappedServerCommand);
 					if (wrappedServerCommandResponse == null) throw new Exception("Got Null response.");
-					return (DefaultServerResponse) EncryptableObject.createFrom( wrappedServerCommandResponse.getEncrypted(), wrappedServerCommandResponse.getData(), getKeyPair().getPrivate());
+					return (DefaultServerResponse) CommunicationObject.createFrom( wrappedServerCommandResponse.getEncrypted(), wrappedServerCommandResponse.getData(), getKeyPair().getPrivate());
 				}
 				else{
 					throw new Exception( "error securing connection with proxy " + proxyUID + " for communication with " + uniqueHostId);
@@ -811,7 +810,7 @@ public class KnownHost{
 			{
 				data = EntityUtils.toByteArray( response.getEntity());
 				if (data.length == 0) throw new Exception("got null - response");
-				DefaultServerResponse defaultServerResponse = (DefaultServerResponse) EncryptableObject.createFrom("1".equals( response.getLastHeader("encrypted").getValue()), data, getKeyPair().getPrivate());
+				DefaultServerResponse defaultServerResponse = (DefaultServerResponse) CommunicationObject.createFrom("1".equals( response.getLastHeader("encrypted").getValue()), data, getKeyPair().getPrivate());
 				if ((defaultServerResponse != null) && (defaultServerResponse.getYourAddress() != null))
 					Backend.getConnectionStatus().addAddressThatCouldBeOurs( defaultServerResponse.getYourAddress());
 				return defaultServerResponse;

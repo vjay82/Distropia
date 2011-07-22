@@ -35,12 +35,12 @@ public class UserProfile extends UserDatabase{
 		return uniqueUserID;
 	}
 	
-	
+	/*
 	@Override
 	public void setKeyPairFor(String uniqueUserID) throws Exception {
 		if (getUniqueUserID().equals( uniqueUserID)) throw new Exception("You are not allowed oberwriting the users keypair.");
 		super.setKeyPairFor(uniqueUserID);
-	}
+	}*/
 
 	public synchronized boolean login( String userName, String password) throws Exception
 	{
@@ -55,7 +55,6 @@ public class UserProfile extends UserDatabase{
 			if (userName.equalsIgnoreCase( getUserName()))
 			{
 				
-				System.out.println( "checkPropertiesSignature ergab: " + checkPropertiesSignature());
 				
 				return true;
 			}

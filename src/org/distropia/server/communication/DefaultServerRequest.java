@@ -1,8 +1,7 @@
 package org.distropia.server.communication;
 
-import org.distropia.server.database.EncryptableObject;
 
-public class DefaultServerRequest extends EncryptableObject {
+public class DefaultServerRequest extends CommunicationObject {
 	/**
 	 * 
 	 */

@@ -18,7 +18,7 @@ import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
 
-public class CommunicationDatabase extends Database {
+public class CommunicationDatabase extends DistropiaDatabase {
 	protected static final String KEY_UNIQUEHOSTID = "UniqueHostId";
 
 	protected static final int MAXIMUM_SAVETIMEFORUNIMPORTANTKNOWNHOST = 60000 * 60 * 24 * 30 * 5; // 5 months

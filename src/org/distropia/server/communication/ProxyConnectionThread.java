@@ -3,7 +3,6 @@ package org.distropia.server.communication;
 import java.util.ArrayList;
 
 import org.distropia.server.Backend;
-import org.distropia.server.database.EncryptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +102,7 @@ public class ProxyConnectionThread extends Thread {
 						}
 					}
 					*/
-					DefaultServerRequest requestCommand = (DefaultServerRequest) EncryptableObject.createFrom(wrappedServerCommandRequest.getEncrypted(), wrappedServerCommandRequest.getData(), knownHost.getKeyPair().getPrivate());
+					DefaultServerRequest requestCommand = (DefaultServerRequest) CommunicationObject.createFrom(wrappedServerCommandRequest.getEncrypted(), wrappedServerCommandRequest.getData(), knownHost.getKeyPair().getPrivate());
 					
 					if ((requestCommand != null) && (!(requestCommand instanceof ProxyRequest)))
 					{
