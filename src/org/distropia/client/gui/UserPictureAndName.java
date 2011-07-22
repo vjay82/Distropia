@@ -1,27 +1,21 @@
 package org.distropia.client.gui;
 
-import com.google.gwt.user.client.ui.FlexTable;
-import com.smartgwt.client.widgets.layout.HStack;
-import com.smartgwt.client.widgets.Img;
-import com.smartgwt.client.widgets.layout.VLayout;
-import com.google.gwt.user.client.ui.Hyperlink;
+import org.distropia.client.Distropia;
 
-public class MainPage_LeftPart extends FlexTable {
-	public MainPage_LeftPart() {
+import com.google.gwt.core.client.GWT;
+import com.smartgwt.client.widgets.Img;
+import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.layout.HLayout;
+
+public class UserPictureAndName extends HLayout {
+	public UserPictureAndName() {
+		Img img = new Img( GWT.getModuleBaseURL() + "userPicture.jpg?sessionId=" + Distropia.getSessionId());
+		addMember(img);
 		
-		HStack hStack = new HStack();
+		Label lblNewLabel = new Label( GWT.getModuleBaseURL() + "userPicture.jpg?sessionId=" + Distropia.getSessionId());
+		addMember(lblNewLabel);
 		
-		Img img = new Img();
-		img.setHeight(50);
-		img.setWidth(50);
-		hStack.addMember(img);
-		
-		VLayout layout = new VLayout();
-		
-		Hyperlink hprlnkNewHyperlink = new Hyperlink("New hyperlink", false, "newHistoryToken");
-		layout.addMember(hprlnkNewHyperlink);
-		hStack.addMember(layout);
-		setWidget(0, 0, hStack);
 	}
+	
 
 }

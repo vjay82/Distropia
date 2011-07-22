@@ -3,7 +3,7 @@ package org.distropia.client;
 import java.io.Serializable;
 
 
-public class UserCredentials implements Serializable {
+public class ClientUserCredentials implements Serializable {
 	/**
 	 * 
 	 */
@@ -62,17 +62,5 @@ public class UserCredentials implements Serializable {
 		this.postcode = postcode;
 	}
 	
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == this) return true;
-		if (!(obj instanceof UserCredentials)) return false;
-		return (Utils.equalsWithNull( firstName, ((UserCredentials)obj).firstName) &&
-				Utils.equalsWithNull( surName, ((UserCredentials)obj).surName) &&
-				Utils.equalsWithNull( title, ((UserCredentials)obj).title) &&
-				(picture == ((UserCredentials)obj).picture) &&
-				Utils.equalsWithNull( street, ((UserCredentials)obj).street) &&
-				Utils.equalsWithNull( city, ((UserCredentials)obj).city) &&
-				Utils.equalsWithNull( postcode, ((UserCredentials)obj).postcode));
-	}
     
 }
