@@ -4,9 +4,6 @@ import com.smartgwt.client.widgets.layout.VLayout;
 
 public class Page extends VLayout {
 	
-	public void close(){
-	}
-
 	public Page() {
 		super();
 		setHeight100();

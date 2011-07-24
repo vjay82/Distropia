@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import net.tomp2p.connection.Bindings;
@@ -40,8 +39,6 @@ import org.distropia.server.database.UserProfiles;
 import org.distropia.server.platformspecific.PlatformWindows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gwt.dev.util.collect.HashMap;
 
 
 public class DHT {

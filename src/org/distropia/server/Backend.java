@@ -2,6 +2,7 @@ package org.distropia.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.util.ByteArrayBuffer;
 import org.distropia.client.Utils;
 import org.distropia.server.communication.KnownHost;
 import org.distropia.server.communication.KnownHosts;
@@ -83,6 +85,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	private Configuration configuration = null;
 	private PlatformSpecific platformSpecific = null;
 	private String workDir = null;
+	private File webContentFolder = null;
 	private UserProfiles userProfiles = null;
 	private boolean thickClient = true; // if false (Android?) dont't serve others as proxy
 	private CommunicationDatabase communicationDatabase = null;
@@ -96,6 +99,7 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	private MaintenanceList maintenanceList = new MaintenanceList();
 	private Autoconf autoconf = new Autoconf();
 	private String connectionTestId = "";
+	private SessionCache sessionCache = null; // webclient session id cache
 	
 	//private enum serverType { THIN, NORMAL, HELPER};
 	
@@ -112,21 +116,14 @@ public class Backend extends HttpServlet implements ServletContextListener{
 		if (isTomcat) //GWT.isProdMode())
 		{
 			logger.info("loading settings for production mode");
-			
 			servletContextPath = getServletContext().getContextPath() + "/" + Backend.class.getSimpleName();
-			logger.info("getting WEB-INF path from servletContext");
-			//String webInfPath = getServletContext().getRealPath("WEB-INF"); // only tomcat
-			//workDir = new File(webInfPath).getParentFile().getParentFile().getParentFile().getParentFile().getPath() + fileSeparator + "workDir" + fileSeparator;
 		}
 		else // settings for GWT development mode
 		{
-			//String webInfPath = getServletContext().getRealPath("WEB-INF"); // only tomcat
-			//logger.info("webInfPath:" + webInfPath);
-			
 			logger.info("loading settings for development mode");
 			port = 8888;
-			//workDir = new File(webInfPath).getParentFile().getParentFile().getPath() + fileSeparator + "workDir" + fileSeparator;
 		}
+		webContentFolder = new File (getServletContext().getRealPath("WEB-INF")).getParentFile();
 		
 		if (DEBUG_USEDEBUGFOLDER){
 			workDir = System.getenv("TMPDIR");
@@ -470,5 +467,44 @@ public class Backend extends HttpServlet implements ServletContextListener{
 	
 	public static PlatformSpecific getPlatformSpecific(){
 		return getInstance().platformSpecific;
+	}
+	
+	public static File getWebContentFolder(){
+		return getInstance().webContentFolder;
+	}
+	
+	public static byte[] httpRequestToByteArray(final HttpServletRequest httpRequest) throws IOException 
+	{
+		if (httpRequest == null) {
+			throw new IllegalArgumentException("HTTP request may not be null");
+		}
+		InputStream instream = httpRequest.getInputStream();
+		if (instream == null) {
+		    return null;
+		}
+		if (httpRequest.getContentLength() > Integer.MAX_VALUE) {
+		     throw new IllegalArgumentException("HTTP request too large to be buffered in memory");
+		}
+		int i = (int)httpRequest.getContentLength();
+		if (i < 0) {
+		    i = 4096;
+		}
+		ByteArrayBuffer buffer = new ByteArrayBuffer(i);
+		try {
+		    byte[] tmp = new byte[4096];
+		    int l;
+		    while((l = instream.read(tmp)) != -1) {
+		    	buffer.append(tmp, 0, l);
+		    }
+		} finally {
+		    instream.close();
+		}
+		return buffer.toByteArray();
+	}
+	
+	public static SessionCache getSessionCache(){
+		if (instance == null) return null;
+		if (instance.sessionCache == null) instance.sessionCache = new SessionCache();
+		return instance.sessionCache;
 	}
 }

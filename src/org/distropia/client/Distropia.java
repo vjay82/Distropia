@@ -25,6 +25,9 @@ public class Distropia implements EntryPoint {
 	private static Distropia instance = null;
 	private static boolean debug = !GWT.isProdMode();
 	private Map<String, String> clientDataStore = new java.util.HashMap<String, String>();
+	private String servletUrl = null;
+	private String webHelperUrl = null;
+	private com.google.gwt.event.shared.HandlerManager handlerManager = new com.google.gwt.event.shared.HandlerManager( null);
 	
 	
 	/**
@@ -35,6 +38,10 @@ public class Distropia implements EntryPoint {
 	
 	public void onModuleLoad() {
 		instance = this;
+		if (GWT.isProdMode()) servletUrl = GWT.getModuleBaseURL() + "/org.distropia.Distropia/DistropiaService";
+		else servletUrl = GWT.getModuleBaseURL() + "DistropiaService";
+		webHelperUrl = GWT.getHostPageBaseURL() + "WebHelper";
+		
 		setCurrentPage( new LoginPage());
 	}
 
@@ -77,7 +84,7 @@ public class Distropia implements EntryPoint {
 		RootLayoutPanel rootPanel = RootLayoutPanel.get();
 		if (getInstance().currentPage != null) 
 		{
-			getInstance().currentPage.close();
+			getInstance().currentPage.destroy();
 			rootPanel.remove( getInstance().currentPage);
 		}
 		getInstance().currentPage = currentPage;
@@ -134,4 +141,16 @@ public class Distropia implements EntryPoint {
 		instance.loggedInUniqueUserId = loggedInUniqueUserId;
 	}
 	
+	public static String getServletUrl(){
+		return instance.servletUrl;
+	}
+	
+	public static String getWebHelperUrl(){
+		return instance.webHelperUrl;
+	}
+	
+	
+	public static com.google.gwt.event.shared.HandlerManager getHandlerManager( ){
+		return instance.handlerManager;
+	}
 }

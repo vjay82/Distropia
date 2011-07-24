@@ -395,35 +395,6 @@ public class KnownHost{
 		}
 		return null;
 	}
-	
-	private static byte[] httpRequestToByteArray(final HttpServletRequest httpRequest) throws IOException 
-	{
-		if (httpRequest == null) {
-			throw new IllegalArgumentException("HTTP request may not be null");
-		}
-		InputStream instream = httpRequest.getInputStream();
-		if (instream == null) {
-		    return null;
-		}
-		if (httpRequest.getContentLength() > Integer.MAX_VALUE) {
-		     throw new IllegalArgumentException("HTTP request too large to be buffered in memory");
-		}
-		int i = (int)httpRequest.getContentLength();
-		if (i < 0) {
-		    i = 4096;
-		}
-		ByteArrayBuffer buffer = new ByteArrayBuffer(i);
-		try {
-		    byte[] tmp = new byte[4096];
-		    int l;
-		    while((l = instream.read(tmp)) != -1) {
-		    	buffer.append(tmp, 0, l);
-		    }
-		} finally {
-		    instream.close();
-		}
-		return buffer.toByteArray();
-	}
 
 	public boolean processEvent( HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Exception{		
 		String strEncrypted = httpRequest.getHeader("encrypted");		
@@ -441,7 +412,7 @@ public class KnownHost{
 		finally{
 			inputStream.close();
 		}*/
-		byte[] data = httpRequestToByteArray(httpRequest);
+		byte[] data = Backend.httpRequestToByteArray(httpRequest);
 		
 		DefaultServerResponse response = processEvent( encrypted, data);
 		

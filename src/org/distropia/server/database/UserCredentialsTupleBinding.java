@@ -20,6 +20,12 @@ public class UserCredentialsTupleBinding extends TupleBinding<UserCredentials> {
 			
 			int length = ti.readInt();
 			if (length > 0){
+				userCredentials.setSmallPicture( new byte[ length]);
+				ti.read( userCredentials.getSmallPicture());
+			}
+			
+			length = ti.readInt();
+			if (length > 0){
 				userCredentials.setPicture( new byte[ length]);
 				ti.read( userCredentials.getPicture());
 			}
@@ -41,6 +47,12 @@ public class UserCredentialsTupleBinding extends TupleBinding<UserCredentials> {
 		to.writeString( userCredentials.getFirstName());
 		to.writeString( userCredentials.getSurName());
 		to.writeString( userCredentials.getTitle());
+		
+		if (userCredentials.getSmallPicture() != null){
+			to.writeInt( userCredentials.getSmallPicture().length);
+			to.write( userCredentials.getSmallPicture());
+		}
+		else to.writeInt( 0);
 		
 		if (userCredentials.getPicture() != null){
 			to.writeInt( userCredentials.getPicture().length);

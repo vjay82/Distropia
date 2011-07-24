@@ -3,7 +3,7 @@ package org.distropia.server.database;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.distropia.client.ClientUserCredentials;
+import org.distropia.client.ClientUserCredentialsResponse;
 import org.distropia.client.Utils;
 import org.distropia.server.database.UserCredentials.Gender;
 
@@ -18,6 +18,7 @@ public class PublicUserCredentials implements Serializable {
 	protected String title = null;
 	
 	protected byte[] picture = null;
+	protected byte[] smallPicture = null;
 	
 	protected String street = null;
     protected String city = null;
@@ -29,11 +30,12 @@ public class PublicUserCredentials implements Serializable {
     @Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof ClientUserCredentials)) return false;
+		if (!(obj instanceof ClientUserCredentialsResponse)) return false;
 		return (Utils.equalsWithNull( firstName, ((PublicUserCredentials)obj).firstName) &&
 				Utils.equalsWithNull( surName, ((PublicUserCredentials)obj).surName) &&
 				Utils.equalsWithNull( title, ((PublicUserCredentials)obj).title) &&
 				Arrays.equals(picture, ((PublicUserCredentials)obj).picture) &&
+				Arrays.equals(smallPicture, ((PublicUserCredentials)obj).smallPicture) &&
 				Arrays.equals(publicKey, ((PublicUserCredentials)obj).publicKey) &&
 				Utils.equalsWithNull( street, ((PublicUserCredentials)obj).street) &&
 				Utils.equalsWithNull( city, ((PublicUserCredentials)obj).city) &&
@@ -42,7 +44,18 @@ public class PublicUserCredentials implements Serializable {
 				);
 	}
 
-    public String getUniqueUserId() {
+    
+    public byte[] getSmallPicture() {
+		return smallPicture;
+	}
+
+
+	public void setSmallPicture(byte[] smallPicture) {
+		this.smallPicture = smallPicture;
+	}
+
+
+	public String getUniqueUserId() {
 		return uniqueUserId;
 	}
 

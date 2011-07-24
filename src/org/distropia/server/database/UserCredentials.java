@@ -1,7 +1,5 @@
 package org.distropia.server.database;
 
-import org.distropia.client.ClientUserCredentials;
-import org.distropia.client.Utils;
 
 public class UserCredentials {
 	
@@ -16,6 +14,7 @@ public class UserCredentials {
 	protected boolean namePublicVisible = true;
 	
 	protected byte[] picture = null;
+	protected byte[] smallPicture = null;
 	protected boolean picturePublicVisible = false;
 	
 	protected String street = null;
@@ -34,6 +33,7 @@ public class UserCredentials {
     	
     	if (picturePublicVisible){
     		u.setPicture(picture);
+    		u.setSmallPicture( smallPicture);
     	}
     	
     	if (addressPublicVisible){
@@ -46,6 +46,16 @@ public class UserCredentials {
     }
     
     
+	public byte[] getSmallPicture() {
+		return smallPicture;
+	}
+
+
+	public void setSmallPicture(byte[] smallPicture) {
+		this.smallPicture = smallPicture;
+	}
+
+
 	public Gender getGender() {
 		return gender;
 	}

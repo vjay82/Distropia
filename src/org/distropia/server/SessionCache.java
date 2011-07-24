@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import org.distropia.client.DefaultRequest;
+import org.distropia.client.DefaultUserResponse;
 
 @SuppressWarnings("serial")
 public class SessionCache implements Maintenanceable, Serializable{
@@ -17,8 +18,26 @@ public class SessionCache implements Maintenanceable, Serializable{
 		Backend.getMaintenanceList().addWithWeakReference( this, 60000);
 	}
 	
+	public Session getSessionForRequest( DefaultRequest defaultRequest, boolean adminAllowed, DefaultUserResponse defaultUserResponse){
+		Session session = getSessionForSessionId( defaultRequest.getSessionId());
+		defaultUserResponse.setSessionId( session.getSessionId());
+		
+		if (adminAllowed && session.isAdmin()){
+			defaultUserResponse.setAdmin( true);
+			defaultUserResponse.setSucceeded( true);
+		}
+		else if (session.getUserProfile() != null){
+			defaultUserResponse.setSucceeded( true);
+		}
+		else{
+			defaultUserResponse.setSucceeded( false);
+			defaultUserResponse.setFailReason( "Invalid sessionId.");
+		}
+		return session;
+	}
+	
 	public Session getSessionForRequest( DefaultRequest defaultRequest){
-		return getSessionForSessionId( defaultRequest.getSessionId());
+		return getSessionForSessionId( defaultRequest.getSessionId());		
 	}
 
 	public synchronized Session getSessionForSessionId( String sessionId){

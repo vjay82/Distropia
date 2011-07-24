@@ -57,6 +57,8 @@ public class LoginPage extends Page {
 				@Override
 				public void onSuccess(LoginUserResponse loginUserResponse) {
 					show();
+					String password = loginForm.getValueAsString("password");
+					loginForm.setValue("password", "");
 					loginForm.enable();
 					if (Distropia.manageSessionAndErrors( loginUserResponse))
 					{
@@ -83,14 +85,15 @@ public class LoginPage extends Page {
 								Date expires = new Date();
 								expires.setTime(expires.getTime() + 14 * 24 * 60 * 60 * 1000);
 								Cookies.setCookie("loginPanel_userName", loginForm.getValueAsString("userName"), expires);
-								Cookies.setCookie("loginPanel_password", loginForm.getValueAsString("password"), expires);							
+								Cookies.setCookie("loginPanel_password", password, expires);							
 							}
 							
+							Distropia.setLoggedInUniqueUserId( loginUserResponse.getUniqueUserId());
 							Distropia.setSessionId( loginUserResponse.getSessionId());
 							Distropia.setCurrentPage( new MainPage());
 						}
 					}
-					loginForm.setValue("password", "");
+					
 				}
 				
 				@Override

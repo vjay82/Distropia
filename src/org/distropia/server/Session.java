@@ -2,6 +2,7 @@ package org.distropia.server;
 
 import java.util.Date;
 
+import org.distropia.client.DefaultUserResponse;
 import org.distropia.server.database.UserProfile;
 
 public class Session {
@@ -10,7 +11,7 @@ public class Session {
 	protected long lastAccess;
 	protected UserProfile userProfile = null;
 	protected boolean admin;
-	
+
 	public UserProfile getUserProfile() {
 		return userProfile;
 	}

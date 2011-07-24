@@ -26,9 +26,6 @@ This way of publishing public databases, every "friend" of a users automatically
 3.1 Searching for uses and making friends
 As it is a distributed network, everybody could create an account as the person he likes to be. To be sure, that the person is really the one you have searched for, the only possible solution is, that you have to ask them a question, when you want to add them as friends. If you are satisfied with the answer, public keys get exchanged.
 
-3.2 Distribute Users private Database on several Nodes
-As if there is already a push mechanism for the public database, it should be possible to share the private database over several nodes. It would require some authentication process, but as nodes can identify themselves it should be no problem to pair a handy with a computer for example. The users private database is still encrypted by the users password, so if he looses his handy, not everything is lost.
-
 4. Updates
 As the project is open source it is expected to have spinoffs. For that a branch identifier is added to each node. A user can select his preferred branch. After confirming and copying down the public key of the creator, whenever the nodes finds another node of the same branch and a newer version, it will download an index-file from it. This index-file contains the name of every file of this release with it hash sums. This file is signed with the private key of the creator. The node now checks against itself, which files differ and then starts asking the network to deliver the remaining with the right hash sums. After that it replaces itself and restarts.
 
@@ -39,8 +36,8 @@ The first (desktop) client is written as a tomcat servlet. It is meant to run as
 6. What is done so far.
 The network layer is nearly finished. I have just begun creating the user databases. I'm sorry that the project is poorly documented and the client part is only in german so far. I'm releasing this far ahead of planned date and thought I would had some more weeks to test and built up the prototype until its initial running state. 
 
-7. Next Steps
-- Building the user database.
+7. Currently working on
+- Building the user database and GUI.
 
 8. How to get started
 - Download and install Java JDK >=1.6. 
@@ -56,6 +53,7 @@ The network layer is nearly finished. I have just begun creating the user databa
 - Go to Java Build Path/Order and Export
 - Make sure GWT is the second entry, just after Distropia/src
 - Save and you are ready to go, how to run a WebProject on a TomcatServer, please again use google
+- Don't forget to start GWT compile to create the Javascript resources
 - When the program runs in tomcat, you could access its webpage at http://localhost:8080/Distropia as long as DEBUG_PRINT_DEBUGPAGE_ON_GET is switched to true, you could see a debug page at http://localhost:8080/Distropia/Backend
 
 9. Contact me at vjay at gmx.net

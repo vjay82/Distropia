@@ -1,6 +1,28 @@
-.distributedBook-loginCaption {	
+.distropia-welcomeLabel {	
 	font-family: Arial, sans-serif;
-	font-size: 40px;
+	font-size: 20px;
 	color: gray;
 }
 
+.distropia-mainPage-menu {	
+	border-right-width:2px;
+	border-right-style:solid;
+	border-right-color:#d3e6f5;
+}
+
+.distropia-userAccountPicture-Small {
+  border:1px solid #021a40;
+}
+
+.distropia-userAccountPicture-Big {
+   padding:1px;
+   border:1px solid #021a40;
+}
+
+.imagedropshadow {
+	padding: 5px;
+	border: solid 1px #CCC;
+	-moz-box-shadow: 1px 1px 5px #999;
+	-webkit-box-shadow: 1px 1px 5px #999;
+        box-shadow: 1px 1px 5px #999;
+}

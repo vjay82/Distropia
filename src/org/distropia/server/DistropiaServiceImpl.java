@@ -1,14 +1,20 @@
 package org.distropia.server;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.distropia.client.BootstrapRequest;
+import org.distropia.client.ClientUserCredentialsResponse;
 import org.distropia.client.CreateUserAccountRequest;
+import org.distropia.client.DefaultRequest;
 import org.distropia.client.DefaultResponse;
 import org.distropia.client.DefaultUserResponse;
 import org.distropia.client.DistropiaService;
@@ -24,6 +30,7 @@ import org.distropia.server.communication.PingResponse;
 import org.distropia.server.database.UserCredentials;
 import org.distropia.server.database.UserProfile;
 import org.distropia.server.database.UserProfiles;
+import org.distropia.server.database.UserCredentials.Gender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +44,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class DistropiaServiceImpl extends RemoteServiceServlet implements
 		DistropiaService {
 	static transient Logger logger = LoggerFactory.getLogger(DistropiaServiceImpl.class);
-	protected SessionCache sessionCache = null;
-
+	
 	 /**
      * @see HttpServlet#HttpServlet()
      */
@@ -129,7 +135,7 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public DefaultUserResponse bootstrap(BootstrapRequest bootstrapRequest)
 			throws IllegalArgumentException {
-		Session session = sessionCache.getSessionForRequest( bootstrapRequest);
+		Session session = getSessionCache().getSessionForRequest( bootstrapRequest);
 		
 		if (session.isAdmin())
 		{
@@ -162,10 +168,8 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 	}
 
 	public SessionCache getSessionCache(){
-		if (sessionCache == null) sessionCache = new SessionCache();
-		return sessionCache;
+		return Backend.getSessionCache();
 	}
-
 
 	@Override
 	public GetAdminSettingsResponse getAdminSettings(
@@ -216,13 +220,33 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	public ClientUserCredentialsResponse getUserCredentials(
+			DefaultRequest defaultRequest) throws IllegalArgumentException {
+		ClientUserCredentialsResponse response = new ClientUserCredentialsResponse();
+		Session session = getSessionCache().getSessionForRequest( defaultRequest, false, response);
 		
-		
-		System.out.println( req.getQueryString() + " sessionID: " + req.getParameter("sessionId"));
-		super.doGet(req, resp);
+		if (session.getUserProfile() != null){
+			try {
+				UserCredentials uc = session.getUserProfile().getUserCredentials();
+				
+				response.setGender( ClientUserCredentialsResponse.Gender.valueOf(uc.getGender().toString()));
+				response.setFirstName(uc.getFirstName());
+				response.setSurName(uc.getSurName());
+				response.setTitle(uc.getTitle());
+				response.setNamePublicVisible( uc.isNamePublicVisible());
+				response.setPicturePublicVisible(uc.isPicturePublicVisible());
+				response.setStreet( uc.getStreet());
+				response.setCity( uc.getCity());
+				response.setPostcode(uc.getPostcode());
+				response.setAddressPublicVisible(uc.isAddressPublicVisible());
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("error getting user credentials", e);
+				response.setSucceeded( false);
+				response.setFailReason("Exception while getting your credentials, please see the server logfiles");
+			}
+		}
+		return response;
 	}
-	
-	
 }
