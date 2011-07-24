@@ -1,24 +1,44 @@
 package org.distropia.client;
 
-import java.io.Serializable;
 
 
-public class ClientUserCredentials implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7753112394362005593L;
+@SuppressWarnings("serial")
+public class ClientUserCredentialsResponse extends DefaultUserResponse {
+
 	public enum Gender {
 	    FEMALE, MALE, BOTH, UNKNOWN 
 	}
 	
-	private String firstName;
-	private String surName;
-	private String title;
-	private byte[] picture;
-	private String street;
-    private String city;
-    private String postcode;
+	protected Gender gender;
+	protected String firstName;
+	protected String surName;
+	protected String title;
+	protected String street;
+	protected String city;
+	protected String postcode;
+    
+    protected boolean namePublicVisible = true;
+	protected boolean picturePublicVisible = false;
+	protected boolean addressPublicVisible = false;
+	
+	
+	@Override
+	public String toString() {
+		String result;
+		
+		if (!Utils.isNullOrEmpty( firstName)) result = firstName + " " + surName;
+		else result = surName;
+		
+		if (!Utils.isNullOrEmpty( title)) result = title + " " + result;
+		
+		return result;
+	}
+	public Gender getGender() {
+		return gender;
+	}
+	public void setGender(Gender gender) {
+		this.gender = gender;
+	}
 	public String getFirstName() {
 		return firstName;
 	}
@@ -36,12 +56,6 @@ public class ClientUserCredentials implements Serializable {
 	}
 	public void setTitle(String title) {
 		this.title = title;
-	}
-	public byte[] getPicture() {
-		return picture;
-	}
-	public void setPicture(byte[] picture) {
-		this.picture = picture;
 	}
 	public String getStreet() {
 		return street;
@@ -61,6 +75,25 @@ public class ClientUserCredentials implements Serializable {
 	public void setPostcode(String postcode) {
 		this.postcode = postcode;
 	}
-	
+	public boolean isNamePublicVisible() {
+		return namePublicVisible;
+	}
+	public void setNamePublicVisible(boolean namePublicVisible) {
+		this.namePublicVisible = namePublicVisible;
+	}
+	public boolean isPicturePublicVisible() {
+		return picturePublicVisible;
+	}
+	public void setPicturePublicVisible(boolean picturePublicVisible) {
+		this.picturePublicVisible = picturePublicVisible;
+	}
+	public boolean isAddressPublicVisible() {
+		return addressPublicVisible;
+	}
+	public void setAddressPublicVisible(boolean addressPublicVisible) {
+		this.addressPublicVisible = addressPublicVisible;
+	}
+    
+    
     
 }
