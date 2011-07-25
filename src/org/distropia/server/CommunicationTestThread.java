@@ -16,9 +16,7 @@ public class CommunicationTestThread extends Thread {
 			try {
 				sleep(1000);
 				if(Backend.getDHT().getContacts()>0){
-					//Backend.getDHT().publishMyAddresses( Backend.getConnectionStatus().getReachableAt());
-					ArrayList<String> adr = Backend.getDHT().getAddressesOfKnownHost( Backend.getUniqueHostId());
-					System.out.println("addresses: " + Arrays.toString( adr.toArray()));
+					Backend.getDHT().searchUser("Volker Gronau");
 				}
 				
 			} catch (Exception e) {

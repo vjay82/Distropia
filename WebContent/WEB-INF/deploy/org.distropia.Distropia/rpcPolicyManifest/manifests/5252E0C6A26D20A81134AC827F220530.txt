@@ -1,2 +1,2 @@
 serviceClass: org.distropia.client.DistropiaService
-path: 2A2DA6BC8629659C8DDC25AE779CED53.gwt.rpc
+path: 6602A7FFEE520A2C71F5B37C21168990.gwt.rpc

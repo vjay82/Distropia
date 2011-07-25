@@ -1,6 +1,6 @@
 package org.distropia.server.database;
 
-import org.distropia.server.database.UserCredentials.Gender;
+import org.distropia.client.Gender;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
@@ -29,6 +29,13 @@ public class UserCredentialsTupleBinding extends TupleBinding<UserCredentials> {
 				userCredentials.setPicture( new byte[ length]);
 				ti.read( userCredentials.getPicture());
 			}
+			
+			userCredentials.setBirthDay( ti.readByte());
+			userCredentials.setBirthMonth( ti.readByte());
+			userCredentials.setBirthYear( ti.readInt());
+			userCredentials.setBirthDayPublicVisible( ti.readBoolean());
+			userCredentials.setBirthMonthPublicVisible( ti.readBoolean());
+			userCredentials.setBirthYearPublicVisible( ti.readBoolean());
 			
 			userCredentials.setNamePublicVisible( ti.readBoolean());
 			userCredentials.setPicturePublicVisible( ti.readBoolean());
@@ -59,6 +66,13 @@ public class UserCredentialsTupleBinding extends TupleBinding<UserCredentials> {
 			to.write( userCredentials.getPicture());
 		}
 		else to.writeInt( 0);
+		
+		to.writeByte( userCredentials.getBirthDay());
+		to.writeByte( userCredentials.getBirthMonth());
+		to.writeInt( userCredentials.getBirthYear());
+		to.writeBoolean( userCredentials.isBirthDayPublicVisible());
+		to.writeBoolean( userCredentials.isBirthMonthPublicVisible());
+		to.writeBoolean( userCredentials.isBirthYearPublicVisible());
 		
 		to.writeBoolean( userCredentials.isNamePublicVisible());
 		to.writeBoolean( userCredentials.isPicturePublicVisible());

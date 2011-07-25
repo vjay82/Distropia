@@ -2,7 +2,6 @@ package org.distropia.server;
 
 import java.util.Date;
 
-import org.distropia.client.DefaultUserResponse;
 import org.distropia.server.database.UserProfile;
 
 public class Session {

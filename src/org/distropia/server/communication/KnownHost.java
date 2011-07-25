@@ -1,7 +1,5 @@
 package org.distropia.server.communication;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.security.Key;
 import java.security.KeyPair;
@@ -25,7 +23,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.util.ByteArrayBuffer;
 import org.apache.http.util.EntityUtils;
 import org.distropia.client.Utils;
 import org.distropia.server.Backend;

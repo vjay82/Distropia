@@ -9,6 +9,7 @@ import net.tomp2p.peers.Number480;
 import net.tomp2p.storage.Data;
 import net.tomp2p.storage.StorageDisk;
 
+import org.distropia.client.PublicUserCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +31,9 @@ public class DHTStorage extends StorageDisk {
 			try {
 				@SuppressWarnings("unchecked")
 				ArrayList<ItemWithCreationTime> items = (ArrayList<ItemWithCreationTime>) data.getObject();
-				ArrayList<UserItem> result = new ArrayList<UserItem>( items.size());
+				ArrayList<PublicUserCredentials> result = new ArrayList<PublicUserCredentials>( items.size());
 				for(ItemWithCreationTime itemWithCreationTime: items)
-					result.add( (UserItem) itemWithCreationTime.getObject());
+					result.add( (PublicUserCredentials) itemWithCreationTime.getObject());
 				return new Data( result);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -42,6 +43,7 @@ public class DHTStorage extends StorageDisk {
 			
 		}
 		else if (DHT.DOMAIN_HOST_ADDRESS.equals( key.getDomainKey())) {
+			logger.info("getting host: " + key.toString());
 			Data data = super.get(key);
 			if (data== null) return null;
 			try {
@@ -58,7 +60,8 @@ public class DHTStorage extends StorageDisk {
 			}						
 			
 		}
-		return super.get(key);
+		else logger.error("not allowed get operation");
+		return null;//super.get(key);
 	}
 
 
@@ -72,10 +75,10 @@ public class DHTStorage extends StorageDisk {
 			logger.info("storing User: " + key.toString());			
 			try{
 				Object o = newData.getObject();
-				if (o instanceof UserItem){
+				if (o instanceof PublicUserCredentials){
 					
 					ArrayList<ItemWithCreationTime> itemsToStore = new ArrayList<ItemWithCreationTime>(1);
-					itemsToStore.add( ItemWithCreationTime.createWithTimeNow( (UserItem) o));
+					itemsToStore.add( ItemWithCreationTime.createWithTimeNow( o));
 					
 					// merging
 					Data oldData = super.get( key);
@@ -89,27 +92,29 @@ public class DHTStorage extends StorageDisk {
 							if (oldItems.get(index).isOlderThanSeconds( MAXIMUM_USER_SAVE_TIME)) oldItems.remove(index);
 							else{ // remove older identical item
 								for(int subIndex = index-1; subIndex>=0; subIndex--){
-									if (oldItems.get(subIndex).getObject().equals(oldItems.get(index).getObject())){
+									if ( ((PublicUserCredentials)oldItems.get(subIndex).getObject()).equals(oldItems.get(index).getObject())){
 										oldItems.remove( subIndex);
+										subIndex--;
 										index--;
 									}
 								}
 							}
 						}
 						
+						logger.info("found old values, shrunk them together to " + oldItems.size());
 						itemsToStore = oldItems;
 					}
 					
 					Data data = new Data( itemsToStore);
 					data.setTTLSeconds( MAXIMUM_USER_SAVE_TIME); // maximum save two days
 					super.put( key, data, publicKey, putIfAbsent, domainProtection);
+					logger.info("store succeeded");
 					return true;
 				}
 			}
 			catch (Exception e) {
 				logger.error( "Error while storing data.", e);
 			}
-			return false;
 		}
 		else if (DHT.DOMAIN_HOST_ADDRESS.equals( key.getDomainKey())){
 			try{
@@ -154,7 +159,6 @@ public class DHTStorage extends StorageDisk {
 			catch (Exception e) {
 				logger.error( "Error while storing data.", e);
 			}
-			return false;
 		}
 		else logger.error( "Not allowed store.");
 		

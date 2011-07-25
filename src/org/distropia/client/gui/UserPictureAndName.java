@@ -34,9 +34,10 @@ public class UserPictureAndName extends HLayout implements UserCredentialsChange
 	
 	public UserPictureAndName() {
 		super();
-		Distropia.getHandlerManager().addHandler( UserCredentialsChangedEvent.getType(), this);
-		
-		if (Distropia.getInstance() != null) img = new UserAccountPicture( Distropia.getLoggedInUniqueUserId(), false);
+		if (Distropia.getInstance() != null){
+			Distropia.getHandlerManager().addHandler( UserCredentialsChangedEvent.getType(), this);
+			img = new UserAccountPicture( Distropia.getLoggedInUniqueUserId(), false);
+		}
 		else img = new Img();
 		img.setExtraSpace(8);
 		addMember( img);
@@ -54,7 +55,8 @@ public class UserPictureAndName extends HLayout implements UserCredentialsChange
 
 	@Override
 	public void destroy(){
-		Distropia.getHandlerManager().removeHandler( UserCredentialsChangedEvent.getType(), this);
+		if (Distropia.getInstance() != null)
+			Distropia.getHandlerManager().removeHandler( UserCredentialsChangedEvent.getType(), this);
 		super.destroy();
 	}
 

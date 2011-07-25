@@ -5,8 +5,6 @@ import org.distropia.client.Utils;
 import org.distropia.client.events.UserCredentialsChangedEvent;
 import org.distropia.client.events.UserCredentialsChangedHandler;
 
-import com.google.gwt.core.client.GWT;
-
 public class UserAccountPicture extends MyFitImage implements UserCredentialsChangedHandler{
 	private static String noCacheItem = "";
 	protected String uniqueUserId = null;
@@ -34,7 +32,7 @@ public class UserAccountPicture extends MyFitImage implements UserCredentialsCha
 		if (bigPicture){
 			setImgMaxWidth(300);
 			setImgMaxHeight(300);
-			setStyleName("imagedropshadow");
+			setStyleName("distropia-userAccountPicture-Big");
 		}
 		else{
 			setImgMaxWidth(50);
@@ -53,16 +51,14 @@ public class UserAccountPicture extends MyFitImage implements UserCredentialsCha
 	
 	@Override
 	public void destroy(){
-		Distropia.getHandlerManager().removeHandler( UserCredentialsChangedEvent.getType(), this);
+		if (Distropia.getInstance() != null) Distropia.getHandlerManager().removeHandler( UserCredentialsChangedEvent.getType(), this);
 		super.destroy();
 	}
 	
 	public void reload(){
 		if (Distropia.getInstance() != null){
-			GWT.log("loading img");
 			setSrc( Distropia.getWebHelperUrl() + "?picture=user&sessionId=" + Distropia.getSessionId() + "&uniqueUserId=" + uniqueUserId + "&bigPicture=" + isBigPicture() + noCacheItem);
 		}
-			
 	}
 	@Override
 	public void userCredentialsChanged(UserCredentialsChangedEvent event) {

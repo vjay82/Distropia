@@ -14,4 +14,6 @@ public interface DistropiaService extends RemoteService {
 	public GetAdminSettingsResponse getAdminSettings( GetAdminSettingsRequest getAdminSettingsRequest) throws IllegalArgumentException;
 	public DefaultUserResponse setAdminSettings( SetAdminSettingsRequest setAdminSettingsRequest) throws IllegalArgumentException;
 	public ClientUserCredentialsResponse getUserCredentials( DefaultRequest defaultRequest) throws IllegalArgumentException;
+	public DefaultUserResponse setUserCredentials( ClientUserCredentialsRequest clientUserCredentialsRequest) throws IllegalArgumentException;
+	public SearchResponse searchUser( SearchRequest searchRequest) throws IllegalArgumentException;
 }

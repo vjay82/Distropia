@@ -8,6 +8,10 @@ public class Utils {
 		if ((s == null) || ("".equals(s))) return true;
 		return false;
 	}
+	public static boolean isNullOrEmpty( Object s){
+		if (s == null) return true;
+		return isNullOrEmpty( s.toString());
+	}
 	public static String boolToLanguage( boolean b){
 		if ( b) return "ja";
 		else return "nein";

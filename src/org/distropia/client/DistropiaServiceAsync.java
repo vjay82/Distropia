@@ -12,4 +12,6 @@ public interface DistropiaServiceAsync {
 	public void getAdminSettings( GetAdminSettingsRequest getAdminSettingsRequest, AsyncCallback<GetAdminSettingsResponse> callback) throws IllegalArgumentException;
 	public void setAdminSettings( SetAdminSettingsRequest setAdminSettingsRequest, AsyncCallback<DefaultUserResponse> callback) throws IllegalArgumentException;
 	public void getUserCredentials( DefaultRequest defaultRequest, AsyncCallback<ClientUserCredentialsResponse> callback) throws IllegalArgumentException;
+	public void setUserCredentials( ClientUserCredentialsRequest clientUserCredentialsRequest, AsyncCallback<DefaultUserResponse> callback) throws IllegalArgumentException;
+	public void searchUser( SearchRequest searchRequest, AsyncCallback<SearchResponse> callback) throws IllegalArgumentException;
 }

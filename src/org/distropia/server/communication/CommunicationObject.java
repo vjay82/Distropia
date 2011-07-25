@@ -5,8 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;

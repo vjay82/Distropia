@@ -1,6 +1,7 @@
 package org.distropia.server.database;
 
-import org.distropia.server.database.UserCredentials.Gender;
+import org.distropia.client.Gender;
+import org.distropia.client.PublicUserCredentials;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
@@ -29,7 +30,11 @@ public class PublicUserCredentialsTupleBinding extends TupleBinding<PublicUserCr
 				userCredentials.setPicture( new byte[ length]);
 				ti.read( userCredentials.getPicture());
 			}
-	
+			
+			userCredentials.setBirthDay( ti.readByte());
+			userCredentials.setBirthMonth( ti.readByte());
+			userCredentials.setBirthYear( ti.readInt());
+			
 			userCredentials.setStreet( ti.readString());
 			userCredentials.setCity( ti.readString());
 			userCredentials.setPostcode( ti.readString());
@@ -55,6 +60,10 @@ public class PublicUserCredentialsTupleBinding extends TupleBinding<PublicUserCr
 			to.write( userCredentials.getPicture());
 		}
 		else to.writeInt( 0);
+		
+		to.writeByte( userCredentials.getBirthDay());
+		to.writeByte( userCredentials.getBirthMonth());
+		to.writeInt( userCredentials.getBirthYear());
 		
 		to.writeString( userCredentials.getStreet());
 		to.writeString( userCredentials.getCity());

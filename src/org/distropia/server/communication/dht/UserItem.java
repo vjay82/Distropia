@@ -3,7 +3,7 @@ package org.distropia.server.communication.dht;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.distropia.server.database.PublicUserCredentials;
+import org.distropia.client.PublicUserCredentials;
 
 public class UserItem implements Serializable{
 	

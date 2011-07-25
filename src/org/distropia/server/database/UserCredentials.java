@@ -1,13 +1,13 @@
 package org.distropia.server.database;
 
+import org.distropia.client.Gender;
+import org.distropia.client.PublicUserCredentials;
+
+
 
 public class UserCredentials {
-	
-	public static enum Gender {
-	    ORGANIZATION, FEMALE, MALE, BOTH, UNKNOWN 
-	}
-	
-	protected Gender gender = Gender.UNKNOWN;
+
+	protected Gender gender = Gender.NOT_SPECIFIED;
 	protected String firstName = null;
 	protected String surName = null;
 	protected String title = null;
@@ -16,6 +16,13 @@ public class UserCredentials {
 	protected byte[] picture = null;
 	protected byte[] smallPicture = null;
 	protected boolean picturePublicVisible = false;
+	
+	protected byte birthDay;
+	protected byte birthMonth;
+	protected int birthYear;
+	protected boolean birthDayPublicVisible = false;
+	protected boolean birthMonthPublicVisible = false;
+	protected boolean birthYearPublicVisible = false;
 	
 	protected String street = null;
     protected String city = null;
@@ -36,6 +43,10 @@ public class UserCredentials {
     		u.setSmallPicture( smallPicture);
     	}
     	
+    	if (birthDayPublicVisible) u.setBirthDay(birthDay);
+    	if (birthMonthPublicVisible) u.setBirthMonth(birthMonth);
+    	if (birthYearPublicVisible) u.setBirthYear(birthYear);
+    	
     	if (addressPublicVisible){
     		u.setStreet(street);
     		u.setCity(city);
@@ -46,6 +57,92 @@ public class UserCredentials {
     }
     
     
+
+
+	public byte getBirthDay() {
+		return birthDay;
+	}
+
+
+
+
+	public void setBirthDay(byte birthDay) {
+		this.birthDay = birthDay;
+	}
+
+
+
+
+	public byte getBirthMonth() {
+		return birthMonth;
+	}
+
+
+
+
+	public void setBirthMonth(byte birthMonth) {
+		this.birthMonth = birthMonth;
+	}
+
+
+
+
+	public int getBirthYear() {
+		return birthYear;
+	}
+
+
+
+
+	public void setBirthYear(int birthYear) {
+		this.birthYear = birthYear;
+	}
+
+
+
+
+	public boolean isBirthDayPublicVisible() {
+		return birthDayPublicVisible;
+	}
+
+
+
+
+	public void setBirthDayPublicVisible(boolean birthDayPublicVisible) {
+		this.birthDayPublicVisible = birthDayPublicVisible;
+	}
+
+
+
+
+	public boolean isBirthMonthPublicVisible() {
+		return birthMonthPublicVisible;
+	}
+
+
+
+
+	public void setBirthMonthPublicVisible(boolean birthMonthPublicVisible) {
+		this.birthMonthPublicVisible = birthMonthPublicVisible;
+	}
+
+
+
+
+	public boolean isBirthYearPublicVisible() {
+		return birthYearPublicVisible;
+	}
+
+
+
+
+	public void setBirthYearPublicVisible(boolean birthYearPublicVisible) {
+		this.birthYearPublicVisible = birthYearPublicVisible;
+	}
+
+
+
+
 	public byte[] getSmallPicture() {
 		return smallPicture;
 	}

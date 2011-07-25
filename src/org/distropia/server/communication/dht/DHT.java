@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import net.tomp2p.connection.Bindings;
@@ -27,13 +29,13 @@ import net.tomp2p.storage.Data;
 
 import org.apache.xerces.impl.dv.util.Base64;
 import org.apache.xerces.util.URI;
+import org.distropia.client.PublicUserCredentials;
 import org.distropia.server.Backend;
 import org.distropia.server.communication.GiveMeYourDHTPortRequest;
 import org.distropia.server.communication.GiveMeYourDHTPortResponse;
 import org.distropia.server.communication.KnownHost;
 import org.distropia.server.communication.KnownHosts;
 import org.distropia.server.database.CommunicationDatabase;
-import org.distropia.server.database.PublicUserCredentials;
 import org.distropia.server.database.UserProfile;
 import org.distropia.server.database.UserProfiles;
 import org.distropia.server.platformspecific.PlatformWindows;
@@ -448,6 +450,42 @@ public class DHT {
 
 	public void setExternalPort(int externalPort) {
 		this.externalPort = externalPort;
+	}
+	
+	public List<PublicUserCredentials> searchUser( String name){
+		
+		
+		List<PublicUserCredentials> result = new ArrayList<PublicUserCredentials>();
+		
+		Number160 locationKey = Number160.createHash( name);
+		logger.info("searching for " + name + " key: " + locationKey.toString());
+		
+		ConfigurationGet config = Configurations.defaultGetConfiguration();
+		config.setDomain( DOMAIN_USER);
+		config.setContentKey( locationKey);
+		FutureDHT future = peer.get(locationKey, config);
+		
+		try {
+			future.await(10000);
+			if (future.isSuccess()){
+				Collection<Data> futureResult = future.getData().values();
+				logger.info("searching for " + name + " got " + futureResult.size() + " results");
+				for(Data data: futureResult){
+					@SuppressWarnings("unchecked")
+					List<PublicUserCredentials> resultList = (List<PublicUserCredentials>) data.getObject();
+					for(PublicUserCredentials puc: resultList){
+						if (!result.contains( puc)) result.add( puc);
+					}
+					
+				}
+			}
+			else logger.error("search failed");
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error( "error searching user " + name, e);
+		}
+		
+		return result;
 	}
 
 	public void pushUsers() {

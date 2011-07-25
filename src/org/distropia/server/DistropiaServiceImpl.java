@@ -1,27 +1,25 @@
 package org.distropia.server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.List;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.distropia.client.BootstrapRequest;
+import org.distropia.client.ClientUserCredentialsRequest;
 import org.distropia.client.ClientUserCredentialsResponse;
 import org.distropia.client.CreateUserAccountRequest;
 import org.distropia.client.DefaultRequest;
 import org.distropia.client.DefaultResponse;
 import org.distropia.client.DefaultUserResponse;
 import org.distropia.client.DistropiaService;
+import org.distropia.client.Gender;
 import org.distropia.client.GetAdminSettingsRequest;
 import org.distropia.client.GetAdminSettingsResponse;
 import org.distropia.client.LoginUserRequest;
 import org.distropia.client.LoginUserResponse;
+import org.distropia.client.PublicUserCredentials;
+import org.distropia.client.SearchRequest;
+import org.distropia.client.SearchResponse;
 import org.distropia.client.SetAdminSettingsRequest;
 import org.distropia.client.Utils;
 import org.distropia.server.communication.KnownHost;
@@ -30,7 +28,6 @@ import org.distropia.server.communication.PingResponse;
 import org.distropia.server.database.UserCredentials;
 import org.distropia.server.database.UserProfile;
 import org.distropia.server.database.UserProfiles;
-import org.distropia.server.database.UserCredentials.Gender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -229,7 +226,7 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 			try {
 				UserCredentials uc = session.getUserProfile().getUserCredentials();
 				
-				response.setGender( ClientUserCredentialsResponse.Gender.valueOf(uc.getGender().toString()));
+				response.setGender( uc.getGender());
 				response.setFirstName(uc.getFirstName());
 				response.setSurName(uc.getSurName());
 				response.setTitle(uc.getTitle());
@@ -239,6 +236,12 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 				response.setCity( uc.getCity());
 				response.setPostcode(uc.getPostcode());
 				response.setAddressPublicVisible(uc.isAddressPublicVisible());
+				response.setBirthDay( uc.getBirthDay());
+				response.setBirthMonth( uc.getBirthMonth());
+				response.setBirthYear( uc.getBirthYear());
+				response.setBirthDayPublicVisible( uc.isBirthDayPublicVisible());
+				response.setBirthMonthPublicVisible( uc.isBirthMonthPublicVisible());
+				response.setBirthYearPublicVisible( uc.isBirthYearPublicVisible());
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -247,6 +250,86 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 				response.setFailReason("Exception while getting your credentials, please see the server logfiles");
 			}
 		}
+		return response;
+	}
+
+	@Override
+	public DefaultUserResponse setUserCredentials(
+			ClientUserCredentialsRequest clientUserCredentialsRequest)
+			throws IllegalArgumentException {
+		ClientUserCredentialsResponse response = new ClientUserCredentialsResponse();
+		Session session = getSessionCache().getSessionForRequest( clientUserCredentialsRequest, false, response);
+		
+		if (session.getUserProfile() != null){
+			try {
+				UserCredentials uc = session.getUserProfile().getUserCredentials();
+				
+				uc.setGender( clientUserCredentialsRequest.getGender());
+				if (uc.getGender().equals( Gender.ORGANIZATION)){
+					uc.setTitle( "");
+					uc.setFirstName( "");
+				}
+				else{
+					uc.setTitle( clientUserCredentialsRequest.getTitle());
+					uc.setFirstName( clientUserCredentialsRequest.getFirstName());
+				}
+				uc.setSurName( clientUserCredentialsRequest.getSurName());
+				uc.setNamePublicVisible( clientUserCredentialsRequest.isNamePublicVisible());
+				uc.setPicturePublicVisible( clientUserCredentialsRequest.isPicturePublicVisible());
+				uc.setStreet( clientUserCredentialsRequest.getStreet());
+				uc.setPostcode( clientUserCredentialsRequest.getPostcode());
+				uc.setCity( clientUserCredentialsRequest.getCity());
+				uc.setAddressPublicVisible(clientUserCredentialsRequest.isAddressPublicVisible());
+				uc.setBirthDay( clientUserCredentialsRequest.getBirthDay());
+				uc.setBirthMonth( clientUserCredentialsRequest.getBirthMonth());
+				uc.setBirthYear( clientUserCredentialsRequest.getBirthYear());
+				uc.setBirthDayPublicVisible( clientUserCredentialsRequest.isBirthDayPublicVisible());
+				uc.setBirthMonthPublicVisible( clientUserCredentialsRequest.isBirthMonthPublicVisible());
+				uc.setBirthYearPublicVisible( clientUserCredentialsRequest.isBirthYearPublicVisible());
+				
+				if (clientUserCredentialsRequest.isDeletePicture()){
+					uc.setPicture( null);
+					uc.setSmallPicture( null);
+				}
+				
+				session.getUserProfile().setUserCredentials( uc);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("error getting user credentials", e);
+				response.setSucceeded( false);
+				response.setFailReason("Exception while getting your credentials, please see the server logfiles");
+			}
+		}
+		return response;
+	}
+
+	@Override
+	public SearchResponse searchUser(SearchRequest searchRequest)
+			throws IllegalArgumentException {
+		
+		SearchResponse response = new SearchResponse();
+		Session session = getSessionCache().getSessionForRequest( searchRequest, false, response);
+		
+		if (session.getUserProfile() != null){
+			try {
+				List<PublicUserCredentials> result = Backend.getDHT().searchUser( searchRequest.getSearchForName());
+				
+				for(PublicUserCredentials puc: result)
+					System.out.println(puc.getSurName());
+				
+				response.setUsers( result);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("error getting user credentials", e);
+				response.setSucceeded( false);
+				response.setFailReason("Exception while getting your credentials, please see the server logfiles");
+			}
+		}
+		
+		
+		
 		return response;
 	}
 }

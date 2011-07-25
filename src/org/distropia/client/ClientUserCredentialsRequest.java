@@ -1,9 +1,9 @@
 package org.distropia.client;
 
 
-
 @SuppressWarnings("serial")
-public class ClientUserCredentialsResponse extends DefaultUserResponse {
+public class ClientUserCredentialsRequest extends DefaultRequest {
+
 	protected Gender gender;
 	protected String firstName;
 	protected String surName;
@@ -22,19 +22,15 @@ public class ClientUserCredentialsResponse extends DefaultUserResponse {
     protected boolean namePublicVisible = true;
 	protected boolean picturePublicVisible = false;
 	protected boolean addressPublicVisible = false;
-	
-	
-	@Override
-	public String toString() {
-		String result;
-		
-		if (!Utils.isNullOrEmpty( firstName)) result = firstName + " " + surName;
-		else result = surName;
-		
-		if (!Utils.isNullOrEmpty( title)) result = title + " " + result;
-		
-		return result;
+	protected boolean deletePicture = false;
+	public ClientUserCredentialsRequest(String sessionId) {
+		super( sessionId);
 	}
+	
+	public ClientUserCredentialsRequest() {
+		super();
+	}
+
 	public Gender getGender() {
 		return gender;
 	}
@@ -77,6 +73,42 @@ public class ClientUserCredentialsResponse extends DefaultUserResponse {
 	public void setPostcode(String postcode) {
 		this.postcode = postcode;
 	}
+	public byte getBirthDay() {
+		return birthDay;
+	}
+	public void setBirthDay(byte birthDay) {
+		this.birthDay = birthDay;
+	}
+	public byte getBirthMonth() {
+		return birthMonth;
+	}
+	public void setBirthMonth(byte birthMonth) {
+		this.birthMonth = birthMonth;
+	}
+	public int getBirthYear() {
+		return birthYear;
+	}
+	public void setBirthYear(int birthYear) {
+		this.birthYear = birthYear;
+	}
+	public boolean isBirthDayPublicVisible() {
+		return birthDayPublicVisible;
+	}
+	public void setBirthDayPublicVisible(boolean birthDayPublicVisible) {
+		this.birthDayPublicVisible = birthDayPublicVisible;
+	}
+	public boolean isBirthMonthPublicVisible() {
+		return birthMonthPublicVisible;
+	}
+	public void setBirthMonthPublicVisible(boolean birthMonthPublicVisible) {
+		this.birthMonthPublicVisible = birthMonthPublicVisible;
+	}
+	public boolean isBirthYearPublicVisible() {
+		return birthYearPublicVisible;
+	}
+	public void setBirthYearPublicVisible(boolean birthYearPublicVisible) {
+		this.birthYearPublicVisible = birthYearPublicVisible;
+	}
 	public boolean isNamePublicVisible() {
 		return namePublicVisible;
 	}
@@ -95,43 +127,11 @@ public class ClientUserCredentialsResponse extends DefaultUserResponse {
 	public void setAddressPublicVisible(boolean addressPublicVisible) {
 		this.addressPublicVisible = addressPublicVisible;
 	}
-	public byte getBirthDay() {
-		return birthDay;
+	public boolean isDeletePicture() {
+		return deletePicture;
 	}
-	public void setBirthDay(byte birthday_Day) {
-		this.birthDay = birthday_Day;
+	public void setDeletePicture(boolean deletePicture) {
+		this.deletePicture = deletePicture;
 	}
-	public byte getBirthMonth() {
-		return birthMonth;
-	}
-	public void setBirthMonth(byte birthday_Month) {
-		this.birthMonth = birthday_Month;
-	}
-	public int getBirthYear() {
-		return birthYear;
-	}
-	public void setBirthYear(int birthday_Year) {
-		this.birthYear = birthday_Year;
-	}
-	public boolean isBirthDayPublicVisible() {
-		return birthDayPublicVisible;
-	}
-	public void setBirthDayPublicVisible(boolean birthdayDayPublicVisible) {
-		this.birthDayPublicVisible = birthdayDayPublicVisible;
-	}
-	public boolean isBirthMonthPublicVisible() {
-		return birthMonthPublicVisible;
-	}
-	public void setBirthMonthPublicVisible(boolean birthdayMonthPublicVisible) {
-		this.birthMonthPublicVisible = birthdayMonthPublicVisible;
-	}
-	public boolean isBirthYearPublicVisible() {
-		return birthYearPublicVisible;
-	}
-	public void setBirthYearPublicVisible(boolean birthdayYearPublicVisible) {
-		this.birthYearPublicVisible = birthdayYearPublicVisible;
-	}
-    
-    
-    
+	
 }

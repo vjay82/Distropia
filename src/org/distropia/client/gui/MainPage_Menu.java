@@ -42,7 +42,12 @@ public class MainPage_Menu extends VLayout {
 		btnNewButton_2.setExtraSpace(8);
 		addMember(btnNewButton_2);
 		
-		Button btnNewButton_1 = new Button("Freunde");
+		Button btnNewButton_1 = new Button("Benutzersuche");
+		btnNewButton_1.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				mainPage.setPage( new MainPage_Search());
+			}
+		});
 		btnNewButton_1.setExtraSpace(8);
 		addMember(btnNewButton_1);
 		
