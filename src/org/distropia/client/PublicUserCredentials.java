@@ -1,24 +1,25 @@
-package org.distropia.server.database;
+package org.distropia.client;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.distropia.client.ClientUserCredentialsResponse;
-import org.distropia.client.Utils;
-import org.distropia.server.database.UserCredentials.Gender;
 
 public class PublicUserCredentials implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -984586017912861531L;
-	protected Gender gender = Gender.UNKNOWN;
+	protected Gender gender = Gender.NOT_SPECIFIED;
 	protected String firstName = null;
 	protected String surName = null;
 	protected String title = null;
 	
 	protected byte[] picture = null;
 	protected byte[] smallPicture = null;
+	
+	protected byte birthDay = 0;
+	protected byte birthMonth = 0;
+	protected int birthYear = 0;
 	
 	protected String street = null;
     protected String city = null;
@@ -30,22 +31,57 @@ public class PublicUserCredentials implements Serializable {
     @Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof ClientUserCredentialsResponse)) return false;
-		return (Utils.equalsWithNull( firstName, ((PublicUserCredentials)obj).firstName) &&
+		if (!(obj instanceof PublicUserCredentials)) return false;
+		
+		return (/*Utils.equalsWithNull( firstName, ((PublicUserCredentials)obj).firstName) &&
 				Utils.equalsWithNull( surName, ((PublicUserCredentials)obj).surName) &&
 				Utils.equalsWithNull( title, ((PublicUserCredentials)obj).title) &&
 				Arrays.equals(picture, ((PublicUserCredentials)obj).picture) &&
 				Arrays.equals(smallPicture, ((PublicUserCredentials)obj).smallPicture) &&
 				Arrays.equals(publicKey, ((PublicUserCredentials)obj).publicKey) &&
+				(birthDay == ((PublicUserCredentials)obj).birthDay) &&
+				(birthMonth == ((PublicUserCredentials)obj).birthMonth) &&
+				(birthYear == ((PublicUserCredentials)obj).birthYear) &&
 				Utils.equalsWithNull( street, ((PublicUserCredentials)obj).street) &&
 				Utils.equalsWithNull( city, ((PublicUserCredentials)obj).city) &&
-				Utils.equalsWithNull( postcode, ((PublicUserCredentials)obj).postcode) &&
-				Utils.equalsWithNull( uniqueUserId, ((PublicUserCredentials)obj).uniqueUserId) 
+				Utils.equalsWithNull( postcode, ((PublicUserCredentials)obj).postcode) &&*/
+				Utils.equalsWithNull( uniqueUserId, ((PublicUserCredentials)obj).uniqueUserId) &&
+				Arrays.equals(publicKey, ((PublicUserCredentials)obj).publicKey) 
 				);
 	}
 
     
-    public byte[] getSmallPicture() {
+    public byte getBirthDay() {
+		return birthDay;
+	}
+
+
+	public void setBirthDay(byte birthday_Day) {
+		this.birthDay = birthday_Day;
+	}
+
+
+	public byte getBirthMonth() {
+		return birthMonth;
+	}
+
+
+	public void setBirthMonth(byte birthday_Month) {
+		this.birthMonth = birthday_Month;
+	}
+
+
+	public int getBirthYear() {
+		return birthYear;
+	}
+
+
+	public void setBirthYear(int birthday_Year) {
+		this.birthYear = birthday_Year;
+	}
+
+
+	public byte[] getSmallPicture() {
 		return smallPicture;
 	}
 
