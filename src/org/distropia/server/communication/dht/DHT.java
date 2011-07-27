@@ -463,6 +463,7 @@ public class DHT {
 		ConfigurationGet config = Configurations.defaultGetConfiguration();
 		config.setDomain( DOMAIN_USER);
 		config.setContentKey( locationKey);
+		
 		FutureDHT future = peer.get(locationKey, config);
 		
 		try {

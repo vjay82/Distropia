@@ -1,9 +1,19 @@
 package org.distropia.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import org.apache.commons.io.IOUtils;
 import org.distropia.client.BootstrapRequest;
 import org.distropia.client.ClientUserCredentialsRequest;
 import org.distropia.client.ClientUserCredentialsResponse;
@@ -39,15 +49,34 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 @SuppressWarnings("serial")
 public class DistropiaServiceImpl extends RemoteServiceServlet implements
-		DistropiaService {
+		DistropiaService, Maintenanceable {
 	static transient Logger logger = LoggerFactory.getLogger(DistropiaServiceImpl.class);
+	protected List<FileToDelete> filesToDelete = new ArrayList<FileToDelete>();
+	protected File tmpDirectory = null;
+	
+	private File getTmpDirectory(){
+		if (tmpDirectory == null){
+			tmpDirectory = new File( Backend.getWorkDir() + "tmpfiles");    	
+	    	if (!tmpDirectory.exists() && !tmpDirectory.mkdirs()) logger.error("Could not create tmp directory " + tmpDirectory);
+	    	
+	    	// clear old tmp files
+	    	for (File file: Arrays.asList( tmpDirectory.listFiles())){
+	    		file.delete();
+	    	}
+		}
+		return tmpDirectory;
+	}
+	
+	public void init(ServletConfig config) throws ServletException {
+    	super.init(config);
+    	logger.info("loaded DistributedBookServiceImpl");        
+	}
 	
 	 /**
      * @see HttpServlet#HttpServlet()
      */
     public DistropiaServiceImpl() {
         super();
-        logger.info("loaded DistributedBookServiceImpl");
     }
     
 	@Override
@@ -294,6 +323,8 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 				
 				session.getUserProfile().setUserCredentials( uc);
 				
+				Backend.getDHT().pushUsers();
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error("error getting user credentials", e);
@@ -304,6 +335,26 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 		return response;
 	}
 
+	protected File writeTmpPicture( byte[] picture, int maxWidth, int maxHeight) throws Exception{
+		File tmpFile = File.createTempFile("userPicture_", ".png", getTmpDirectory());
+		
+		if (maxWidth == 0 && maxHeight == 0){
+			FileOutputStream fos = new FileOutputStream( tmpFile);
+			fos.write( picture);
+			fos.close();
+		}
+		else{
+			FileOutputStream fos = new FileOutputStream( tmpFile);
+			try{
+				WebHelper.scalePictureToMax(new ByteArrayInputStream( picture), fos, maxWidth, maxHeight);
+			}
+			finally{
+				fos.close();
+			}			
+		}
+		return tmpFile;
+	}
+	
 	@Override
 	public SearchResponse searchUser(SearchRequest searchRequest)
 			throws IllegalArgumentException {
@@ -315,9 +366,27 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 			try {
 				List<PublicUserCredentials> result = Backend.getDHT().searchUser( searchRequest.getSearchForName());
 				
-				for(PublicUserCredentials puc: result)
-					System.out.println(puc.getSurName());
-				
+				for(PublicUserCredentials puc: result){
+					
+					if (puc.getPicture() == null){
+						FileInputStream fi = new FileInputStream( Backend.getWebContentFolder().getAbsolutePath() + File.separator + "images" + File.separator + "replacement_user_image.png");
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
+						IOUtils.copy(fi, out);
+						fi.close();
+						puc.setPicture( out.toByteArray());
+					}
+					
+					if (puc.getPicture() != null){
+						File tmpFile = writeTmpPicture( puc.getPicture(), 186, 120);
+						synchronized (filesToDelete) {
+							filesToDelete.add( new FileToDelete( System.currentTimeMillis() + 600000, tmpFile));
+						}
+						Backend.getMaintenanceList().addWithWeakReference( this, 60000);
+						
+						puc.setPicture( tmpFile.getName().getBytes("UTF-8"));
+					}
+					puc.setSmallPicture( null);
+				}
 				response.setUsers( result);
 				
 			} catch (Exception e) {
@@ -331,5 +400,18 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 		
 		
 		return response;
+	}
+
+	@Override
+	public void maintenance() {
+		long currentMillis = System.currentTimeMillis();
+		synchronized ( filesToDelete) {
+			for(int index = filesToDelete.size()-1; index>=0 ; index--){
+				FileToDelete fileToDelete = filesToDelete.get(index);
+				if (fileToDelete.getDeleteAt() < currentMillis){
+					if (fileToDelete.getFile().delete()) filesToDelete.remove(index);
+				}
+			}
+		}
 	}
 }
