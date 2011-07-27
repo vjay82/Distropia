@@ -1,2 +1,0 @@
-# Module org.distropia.Distropia
-# RPC service class, partial path of RPC policy file
