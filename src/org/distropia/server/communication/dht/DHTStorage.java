@@ -94,8 +94,9 @@ public class DHTStorage extends StorageDisk {
 								for(int subIndex = index-1; subIndex>=0; subIndex--){
 									if ( ((PublicUserCredentials)oldItems.get(subIndex).getObject()).equals(oldItems.get(index).getObject())){
 										oldItems.remove( subIndex);
-										subIndex--;
 										index--;
+										subIndex--;
+										
 									}
 								}
 							}
@@ -143,6 +144,7 @@ public class DHTStorage extends StorageDisk {
 									if (oldItems.get(subIndex).getObject().equals(oldItems.get(index).getObject())){
 										oldItems.remove( subIndex);
 										index--;
+										subIndex--;
 									}
 								}
 							}

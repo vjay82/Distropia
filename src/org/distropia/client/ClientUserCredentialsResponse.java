@@ -26,8 +26,9 @@ public class ClientUserCredentialsResponse extends DefaultUserResponse {
 	
 	@Override
 	public String toString() {
-		String result;
+		if (Gender.ORGANIZATION.equals( gender)) return surName;
 		
+		String result;
 		if (!Utils.isNullOrEmpty( firstName)) result = firstName + " " + surName;
 		else result = surName;
 		
@@ -35,6 +36,7 @@ public class ClientUserCredentialsResponse extends DefaultUserResponse {
 		
 		return result;
 	}
+	
 	public Gender getGender() {
 		return gender;
 	}

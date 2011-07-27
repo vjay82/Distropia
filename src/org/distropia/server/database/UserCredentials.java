@@ -34,6 +34,7 @@ public class UserCredentials {
     	
     	if (namePublicVisible){
     		u.setGender(gender);
+    		u.setTitle(title);
     		u.setFirstName(firstName);
     		u.setSurName(surName);
     	}
