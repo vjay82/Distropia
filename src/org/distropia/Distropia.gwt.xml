@@ -3,4 +3,5 @@
 	<inherits name="com.reveregroup.gwt.imagepreloader.ImagePreloader" />
 	<inherits name='com.google.gwt.user.User'/>
 	<entry-point class="org.distropia.client.Distropia"/>
+	<inherits name="gwtupload.GWTUpload"/>	
 </module>

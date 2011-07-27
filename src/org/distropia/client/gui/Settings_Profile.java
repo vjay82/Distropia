@@ -46,34 +46,15 @@ public class Settings_Profile extends VLayout {
 	private TextItem firstNameItem;
 	private boolean deletePicture = false;
 	private Button btnDeleteUserPicture;
-	private SpinnerItem birthMonth;
-	private SpinnerItem birthYear;
-	private SpinnerItem birthDay;
-	private CheckboxItem checkboxBirthDayPublicVisible;
-	private CheckboxItem checkboxBirthMonthPublicVisible;
-	private CheckboxItem checkboxBirthYearPublicVisible;
-	
 	
 	private void onGenderChanged(Object value) {
 		if (value.equals( Gender.ORGANIZATION.toString())){
 			titleItem.hide();
 			firstNameItem.hide();
-			birthMonth.hide();
-			birthYear.hide();
-			birthDay.hide();
-			checkboxBirthDayPublicVisible.hide();
-			checkboxBirthMonthPublicVisible.hide();
-			checkboxBirthYearPublicVisible.hide();
 		}
 		else{
 			titleItem.show();
 			firstNameItem.show();
-			birthMonth.show();
-			birthYear.show();
-			birthDay.show();
-			checkboxBirthDayPublicVisible.show();
-			checkboxBirthMonthPublicVisible.show();
-			checkboxBirthYearPublicVisible.show();
 		}
 	}
 	
@@ -98,12 +79,11 @@ public class Settings_Profile extends VLayout {
 			c.setNamePublicVisible( (Boolean) userCredentials.getValue("namePublicVisible"));
 			c.setBirthDay( ((Integer) userCredentials.getValue("birthDay")).byteValue());
 			c.setBirthMonth( ((Integer) userCredentials.getValue("birthMonth")).byteValue());
-			c.setBirthYear( (Integer) userCredentials.getValue("birthYear"));
+			c.setBirthYear( ((Integer) userCredentials.getValue("birthYear")).byteValue());
 			c.setBirthDayPublicVisible((Boolean) userCredentials.getValue("birthDayPublicVisible"));
 			c.setBirthMonthPublicVisible((Boolean) userCredentials.getValue("birthMonthPublicVisible"));
 			c.setBirthYearPublicVisible((Boolean) userCredentials.getValue("birthYearPublicVisible"));
 			c.setStreet( userCredentials.getValueAsString("street"));
-			c.setAddressPublicVisible((Boolean) userCredentials.getValue("addressPublicVisible"));
 			c.setPostcode( userCredentials.getValueAsString("postcode"));
 			c.setCity( userCredentials.getValueAsString("city"));
 			c.setPicturePublicVisible( (Boolean) uploadForm.getValue("picturePublicVisible"));
@@ -161,12 +141,14 @@ public class Settings_Profile extends VLayout {
 	}
 	
 	public Settings_Profile() {
+		
 		LinkedHashMap<String, String> genderMap = new LinkedHashMap<String, String>();
-		genderMap.put(Gender.NOT_SPECIFIED.toString(), Gender.NOT_SPECIFIED.toDisplayString());
-		genderMap.put(Gender.ORGANIZATION.toString(), Gender.ORGANIZATION.toDisplayString());
-		genderMap.put(Gender.MALE.toString(), Gender.MALE.toDisplayString());
-		genderMap.put(Gender.FEMALE.toString(), Gender.FEMALE.toDisplayString());
-		genderMap.put(Gender.BOTH.toString(), Gender.BOTH.toDisplayString());
+		genderMap.put(Gender.NOT_SPECIFIED.toString(), "Nicht angegeben");
+		genderMap.put(Gender.ORGANIZATION.toString(), "Keine natürliche Person");
+		genderMap.put(Gender.MALE.toString(), "Männlich");
+		genderMap.put(Gender.FEMALE.toString(), "Weiblich");
+		genderMap.put(Gender.BOTH.toString(), "Transexuell");
+		
 
 		uploadForm = new DynamicForm();
 		uploadForm.setNumCols(8);
@@ -214,12 +196,12 @@ public class Settings_Profile extends VLayout {
 		booleanItem.setTitle("Dein Name ist öffentlich sichtbar (Du bist suchbar)");
 		TextItem textItem_1 = new TextItem("surName", "Nachname");
 		textItem_1.setStartRow(true);
-		birthDay = new SpinnerItem("birthDay", "Der Tag im Monat, an dem du Geburtstag hast");
-		birthDay.setStartRow(true);
-		birthMonth = new SpinnerItem("birthMonth", "Dein Geburtsmonat");
-		birthMonth.setStartRow(true);
-		birthYear = new SpinnerItem("birthYear", "Dein Geburtsjahr");
-		birthYear.setStartRow(true);
+		SpinnerItem spinnerItem = new SpinnerItem("birthDay", "Der Tag im Monat, an dem du Geburtstag hast");
+		spinnerItem.setStartRow(true);
+		SpinnerItem spinnerItem_1 = new SpinnerItem("birthMonth", "Dein Geburtsmonat");
+		spinnerItem_1.setStartRow(true);
+		SpinnerItem spinnerItem_2 = new SpinnerItem("birthYear", "Dein Geburtsjahr");
+		spinnerItem_2.setStartRow(true);
 		TextItem textItem_2 = new TextItem("street", "Straße");
 		textItem_2.setStartRow(true);
 		TextItem textItem_3 = new TextItem("city", "Ort");
@@ -235,10 +217,7 @@ public class Settings_Profile extends VLayout {
 		titleItem = new ComboBoxItem("title", "Titel");
 		titleItem.setStartRow(true);
 		titleItem.setValueMap( "", "Dr.", "Dipl. Ing.");
-		checkboxBirthDayPublicVisible = new CheckboxItem("birthDayPublicVisible", "Tag öffentlich sichtbar");
-		checkboxBirthMonthPublicVisible = new CheckboxItem("birthMonthPublicVisible", "Monat öffentlich sichtbar");
-		checkboxBirthYearPublicVisible = new CheckboxItem("birthYearPublicVisible", "Jahr öffentlich sichtbar");
-		userCredentials.setFields(new FormItem[] { selectItem, titleItem, firstNameItem, textItem_1, booleanItem, birthDay, checkboxBirthDayPublicVisible, birthMonth, checkboxBirthMonthPublicVisible, birthYear, checkboxBirthYearPublicVisible, textItem_2, new CheckboxItem("addressPublicVisible", "Adresse ist öffentlich einsehbar"), new TextItem("postcode", "Postleitzahl"), textItem_3});
+		userCredentials.setFields(new FormItem[] { selectItem, titleItem, firstNameItem, textItem_1, booleanItem, spinnerItem, new CheckboxItem("birthDayPublicVisible", "Tag öffentlich sichtbar"), spinnerItem_1, new CheckboxItem("birthMonthPublicVisible", "Monat öffentlich sichtbar"), spinnerItem_2, new CheckboxItem("birthYearPublicVisible", "Jahr öffentlich sichtbar"), textItem_2, new CheckboxItem("newCheckboxItem_9", "Adresse ist öffentlich einsehbar"), new TextItem("postcode", "Postleitzahl"), textItem_3});
 		userCredentialsLayout.addMember(userCredentials);
 		this.addMember( userCredentialsLayout);
 		
@@ -356,15 +335,6 @@ public class Settings_Profile extends VLayout {
 
 	public DynamicForm getUserCredentials() {
 		return userCredentials;
-	}
-	public SpinnerItem getBirthDay() {
-		return birthDay;
-	}
-	public SpinnerItem getBirthMonth() {
-		return birthMonth;
-	}
-	public SpinnerItem getBirthYear() {
-		return birthYear;
 	}
 }
 					

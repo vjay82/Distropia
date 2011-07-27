@@ -507,8 +507,4 @@ public class Backend extends HttpServlet implements ServletContextListener{
 		if (instance.sessionCache == null) instance.sessionCache = new SessionCache();
 		return instance.sessionCache;
 	}
-	
-	public static String getWorkDir(){
-		return instance.workDir;
-	}
 }

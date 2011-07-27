@@ -84,8 +84,6 @@ public class MaintenanceList {
 
 	public void addWithWeakReference( Maintenanceable maintenanceable, int interval){
 		synchronized (items) {
-			for( MaintenanceItem maintenanceItem: items)
-				if (maintenanceItem.get() == maintenanceable) return;
 			items.add( new MaintenanceItem(interval, maintenanceable));
 		}
 	}

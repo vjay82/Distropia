@@ -8,7 +8,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -37,8 +36,6 @@ public class WebHelper extends HttpServlet {
 		return Backend.getSessionCache();
 	}
 	
-	
-	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -49,21 +46,7 @@ public class WebHelper extends HttpServlet {
 			Session session = getSessionCache().getSessionForSessionId(sessionId);
 			if (session.getUserProfile() != null){
 				String picture = req.getParameter("picture");
-				if ("tmp".equals(picture)){
-					String fileName = req.getParameter("filename");
-					if (fileName.contains("..")) return;
-					System.out.println("fnis:"+fileName);
-					File picFile = new File( Backend.getWorkDir() + "tmpfiles" + File.separator + fileName);
-					
-					OutputStream out = resp.getOutputStream();					
-					FileInputStream fi = new FileInputStream( picFile);
-					resp.setContentType("image");
-					IOUtils.copy(fi, out);
-					fi.close();
-					out.close();
-					
-				}
-				else if ("user".equals(picture)){
+				if ("user".equals(picture)){
 					try
 					{
 						byte[] rawPicture = null;
@@ -139,16 +122,20 @@ public class WebHelper extends HttpServlet {
 								logger.info("Setting new user picture for " + session.getUserProfile());
 								
 								
-								UserCredentials userCredentials = session.getUserProfile().getUserCredentials();
 								// creating the small image
+								int width = 50;
+								int height = 50;
+								BufferedImage bsrc = ImageIO.read(new ByteArrayInputStream( item.get())); 
+								BufferedImage bdest = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+								Graphics2D g = bdest.createGraphics();
+								AffineTransform at = AffineTransform.getScaleInstance((double)width/bsrc.getWidth(), (double)height/bsrc.getHeight());
+								g.drawRenderedImage(bsrc,at);
 								ByteArrayOutputStream bo = new ByteArrayOutputStream();
-								scalePictureToMax( new ByteArrayInputStream( item.get()), bo, 50, 50);
-								userCredentials.setSmallPicture( bo.toByteArray());
-								// creating big picture
-								bo = new ByteArrayOutputStream();
-								scalePictureToMax( new ByteArrayInputStream( item.get()), bo, 500, 500);
-								userCredentials.setPicture( bo.toByteArray());
+								ImageIO.write(bdest,"PNG", bo);
 								
+						    	UserCredentials userCredentials = session.getUserProfile().getUserCredentials();
+								userCredentials.setPicture( item.get());
+								userCredentials.setSmallPicture( bo.toByteArray());
 								session.getUserProfile().setUserCredentials(userCredentials);
 					    	}
 					    }
@@ -167,30 +154,5 @@ public class WebHelper extends HttpServlet {
 			}
 		}
 		else super.doPost(req, resp);
-	}
-	
-	static public void scalePictureToMax( InputStream in, OutputStream out, int maxWidth, int maxHeight) throws Exception{
-		BufferedImage bsrc = ImageIO.read( in);
-		
-		int height = 0;
-		int width = 0;
-		
-		double aspectRatio = ((double) bsrc.getHeight())
-				/ ((double) bsrc.getWidth());
-		
-		double maxAR = ((double) maxHeight) / ((double) maxWidth);
-		if (aspectRatio > maxAR) {
-			height = maxHeight;
-			width = (int) Math.round(maxHeight / aspectRatio);
-		} else {
-			width = maxWidth;
-			height = (int) Math.round(maxWidth * aspectRatio);
-		}
-		
-		BufferedImage bdest = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = bdest.createGraphics();
-		AffineTransform at = AffineTransform.getScaleInstance((double)width/bsrc.getWidth(), (double)height/bsrc.getHeight());
-		g.drawRenderedImage(bsrc,at);
-		ImageIO.write(bdest,"PNG", out);		
-	}
+	}	
 }

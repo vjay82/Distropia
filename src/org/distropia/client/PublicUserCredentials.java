@@ -49,47 +49,6 @@ public class PublicUserCredentials implements Serializable {
 				Arrays.equals(publicKey, ((PublicUserCredentials)obj).publicKey) 
 				);
 	}
-    
-    public boolean isOneBirthFieldSet(){
-    	if (gender.equals( Gender.ORGANIZATION)) return false;
-    	return (getBirthDay()+getBirthMonth()+getBirthYear() > 0);
-    }
-    
-    public String toBirthdayString(){
-    	String day, month, year;
-    	if (getBirthDay() > 0) day = String.valueOf( getBirthDay());
-    	else day = "??";
-    	if (getBirthMonth() > 0) month = String.valueOf( getBirthMonth());
-    	else month = "??";
-    	if (getBirthYear() > 0) year = String.valueOf( getBirthYear());
-    	else year = "????";
-    	return day+"."+month+"."+year;
-    }
-    
-    public String toAddressBlock(){
-    	String result;
-    	if (!Utils.isNullOrEmpty( getStreet())) result = getStreet();
-    	else result ="";
-    	
-    	if (!Utils.isNullOrEmpty( getPostcode())) result = result + "<br>" + getPostcode()+ " " + getCity();
-    	else if (!Utils.isNullOrEmpty( getCity())) result = result + "<br>" + getCity();
-    	
-    	return result;
-    	
-    }
-    
-    @Override
-	public String toString() {
-		if (Gender.ORGANIZATION.equals( gender)) return surName;
-		
-		String result;
-		if (!Utils.isNullOrEmpty( firstName)) result = firstName + " " + surName;
-		else result = surName;
-		
-		if (!Utils.isNullOrEmpty( title)) result = title + " " + result;
-		
-		return result;
-	}
 
     
     public byte getBirthDay() {
