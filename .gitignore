@@ -1,3 +1,4 @@
 .gwt/
 WebContent/WEB-INF/classes/*
 WebContent/org.distropia.Distropia/*
+WebContent/WEB-INF/classes/*
