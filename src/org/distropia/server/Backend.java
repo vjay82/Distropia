@@ -215,8 +215,8 @@ public class Backend extends HttpServlet implements ServletContextListener{
 
 
 
-	public UserProfiles getUserProfiles() {
-		return userProfiles;
+	public static UserProfiles getUserProfiles() {
+		return instance.userProfiles;
 	}
 	
 	ArrayList<String> myLastTenRequests = new ArrayList<String>();
