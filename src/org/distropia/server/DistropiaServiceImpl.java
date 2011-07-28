@@ -85,7 +85,7 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 			throws RemoteException {
 		
 		Session session = getSessionCache().getSessionForRequest( createAccountRequest);
-		UserProfiles userProfiles = Backend.getInstance().getUserProfiles();
+		UserProfiles userProfiles = Backend.getUserProfiles();
 		if (userProfiles == null) throw new RemoteException("UserProfiles are null", null);
 		
 		synchronized (userProfiles) {
@@ -128,7 +128,7 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 		Session session = getSessionCache().getSessionForRequest( loginUserRequest);
 		
 		// we look if a user could log in with this credentials
-		UserProfiles userProfiles = Backend.getInstance().getUserProfiles();
+		UserProfiles userProfiles = Backend.getUserProfiles();
 		if (userProfiles == null) throw new RemoteException("UserProfiles are null", null);
 		
 		synchronized (userProfiles) {
@@ -143,7 +143,7 @@ public class DistropiaServiceImpl extends RemoteServiceServlet implements
 				e.printStackTrace();
 				logger.error("Error log in user " + loginUserRequest.getUserName());
 				return new LoginUserResponse( session.getSessionId(), false, "Exception, please take a look at the server logfiles.", null, false, false);
-			}		 
+			}
 		}
 		
 		// we look if the adminUser could be logged in

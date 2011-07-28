@@ -3,7 +3,9 @@ package org.distropia.server.database;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.distropia.server.communication.KnownHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,8 @@ public class UserProfiles extends ArrayList<UserProfile>{
 		return new UserProfile( dataDirectory);
 	}
 	
+	
+	
 	private void loadUserProfiles() throws Exception 
     {
 		logger.info("loading userProfiles from directory " + userProfileDirectory.getAbsolutePath());
@@ -50,6 +54,46 @@ public class UserProfiles extends ArrayList<UserProfile>{
 	protected String createNewUniqueUserID()
 	{
 		return java.util.UUID.randomUUID().toString().replaceAll("-", "");
+	}
+	
+	public UserProfile downloadFromRemote( String uniqueUserId, byte[] publicKey, List<KnownHost> remoteSystems) throws Exception
+	{
+		UserProfile userProfile = createNewTempUser(uniqueUserId);
+		
+		 
+		
+		
+		return null;
+		
+	}
+	
+	
+	private UserProfile createNewTempUser( String uniqueUserId) throws Exception{
+		
+		int tryCount = 100;
+		do {
+			String folderID = createNewUniqueUserID();
+			File dataDirectory = new File( userProfileDirectory.getAbsolutePath() + File.separator + "tmp" + File.separator + folderID);
+			if (!dataDirectory.exists() && dataDirectory.mkdirs())
+			{
+				UserProfile userProfile = loadUserProfile( dataDirectory);
+				try {
+					userProfile.setUniqueUserID( uniqueUserId);
+					return userProfile;
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.error("error creating user", e);
+					try {
+						removeDir( dataDirectory);
+					} catch (Exception e2) {
+						e2.printStackTrace();
+						logger.error("error deleting the user directory", e2);
+					}
+				}				
+			}
+			tryCount--;
+		} while (tryCount>0);
+		return null;
 	}
 	
 	public UserProfile createNewUser() throws Exception{

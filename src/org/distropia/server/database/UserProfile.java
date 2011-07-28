@@ -38,7 +38,7 @@ public class UserProfile extends UserDatabase{
 	/*
 	@Override
 	public void setKeyPairFor(String uniqueUserID) throws Exception {
-		if (getUniqueUserID().equals( uniqueUserID)) throw new Exception("You are not allowed oberwriting the users keypair.");
+		if (getUniqueUserID().equals( uniqueUserID)) throw new Exception("You are not allowed overwriting the users keypair.");
 		super.setKeyPairFor(uniqueUserID);
 	}*/
 

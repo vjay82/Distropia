@@ -78,7 +78,6 @@ public class DistropiaDatabase implements Maintenanceable{
 		super();
 		this.databasePath = databasePath;
 		if ((!databasePath.exists()) && (!databasePath.mkdirs())) throw new Exception("Could not create path " + databasePath.getAbsolutePath());
-		
 	}	
 	
 	public long getPropertyLong( String key, long defaultValue) throws Exception
