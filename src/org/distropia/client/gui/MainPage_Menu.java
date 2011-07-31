@@ -16,6 +16,7 @@ public class MainPage_Menu extends VLayout {
 	 * @wbp.parser.constructor
 	 */
 	public MainPage_Menu() {
+		setBackgroundImage("background.jpg");
 		setLayoutAlign( Alignment.CENTER);
 		setDefaultLayoutAlign(Alignment.CENTER);
 		//setDefaultLayoutAlign( VerticalAlignment.TOP);

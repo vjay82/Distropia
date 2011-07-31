@@ -109,6 +109,7 @@ public class LoginPage extends Page {
 	
 	public LoginPage() {
 		super();
+		setBackgroundImage("background.jpg");
 		
 		loginForm = new DynamicForm();
 		loginForm.setPadding(8);
